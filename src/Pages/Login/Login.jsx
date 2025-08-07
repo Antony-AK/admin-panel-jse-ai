@@ -34,7 +34,7 @@ const Login = () => {
 
         if (response.ok) {
             sessionStorage.setItem("token", data.token)
-            toast.success("Login successful!") 
+            // toast.success("Login successful!") 
             
             navigate("/dashboard")
         }
@@ -49,15 +49,15 @@ const Login = () => {
   }
 
   return (
-    <div className='flex justify-center items-center h-screen gap-14'>
+    <div className='flex justify-center items-center gap-16 h-screen  w-full'>
 
         {/* Left Side */}
-        <div className="">
-            <img src={login_img} className='h-[calc(100vh-40px)]' alt="" />
+        <div className="w-[35%] flex justify-center items-center ">
+            <img src={login_img} className='h-[calc(100vh-120px)] w-[85%] ' alt="" />
         </div>
 
         {/* Right Side */}
-        <div className="flex flex-col items-center gap-6 w-full max-w-2xl">
+        <div className="flex flex-col justify-center items-center gap-6 w-[40%] ">
 
             <img src={jse_logo} className='mx-auto w-32 h-14' alt="" />
             <h2 className='text-center font-bold text-2xl'>Welcome to Admin Panel</h2>
@@ -86,8 +86,8 @@ const Login = () => {
                      type="text"
                      value={email}
                      onChange={(e) => setEmail(e.target.value)}
-                     placeholder='enter your email'
-                     className='border border-[#0000004F] outline-none rounded-xl p-3'
+                    //  placeholder='enter your email'
+                     className='border border-[#0000004F] outline-none rounded-xl p-3 px-4'
                     />
                 </div>
 
@@ -99,8 +99,8 @@ const Login = () => {
                      type="text"
                      value={password}
                      onChange={(e) => setPassword(e.target.value)}
-                     placeholder='enter your email'
-                     className='border border-[#0000004F] outline-none rounded-xl p-3'
+                    //  placeholder='enter your password'
+                     className='border border-[#0000004F] outline-none rounded-xl p-3 px-4' 
                     />
                 </div>
 

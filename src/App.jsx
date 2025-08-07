@@ -9,13 +9,15 @@ import Announcements from './Pages/Announcements/Announcements';
 import Questions from './Pages/Questions/Questions';
 import UserDetails from './Pages/UserDetails/UserDetails';
 import UserProfile from './Pages/UserProfile/UserProfile';
+import Navbar from './Components/Navbar/Navbar';
 
 const App = () => {
   return (
     <>
+    <Navbar/>
 
     <Routes>
-      <Route path='/login' element={<Login />}/>
+      <Route path='/' element={<Login />}/>
       <Route path='/dashboard' element={<Dashboard />}/>
       <Route path='/announcements' element={<Announcements />}/>
       <Route path='/questions' element={<Questions />}/>
