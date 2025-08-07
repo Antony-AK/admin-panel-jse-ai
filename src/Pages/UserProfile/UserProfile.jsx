@@ -19,6 +19,7 @@ const UserProfile = () => {
   const [editCertificates, setEditCertificates] = useState(false);
   const [editNotifications, setEditNotifications] = useState(false);
   const [editPreferences, setEditPreferences] = useState(false);
+  const [editSubscription, setEditSubscription] = useState(false);
 
   const [user, setUser] = useState(null);
 
@@ -55,6 +56,12 @@ const UserProfile = () => {
     language: '',
     timezone: '',
   });
+  const [editKeySkills, setEditKeySkills] = useState(false);
+  const [keySkills, setKeySkills] = useState(user?.seekers?.[0]?.key_skills || []);
+  const [primaryTitle, setPrimaryTitle] = useState('');
+  const [secondaryTitle, setSecondaryTitle] = useState('');
+  const [tertiaryTitle, setTertiaryTitle] = useState('');
+  const [proficiencyTest, setProficiencyTest] = useState(0);
 
   useEffect(() => {
     const storedUser = sessionStorage.getItem('selectedUser');
@@ -121,6 +128,12 @@ const UserProfile = () => {
           timezone: prefData.timezone || '',
         });
       }
+
+      setKeySkills(parsedUser?.seekers?.[0]?.key_skills || []);
+      setPrimaryTitle(parsedUser?.seekers?.[0]?.primary_title || '');
+      setSecondaryTitle(parsedUser?.seekers?.[0]?.secondary_title || '');
+      setTertiaryTitle(parsedUser?.seekers?.[0]?.tertiary_title || '');
+      setProficiencyTest(parsedUser?.seekers?.[0]?.proficiency_test || 0);
 
     } else {
       navigate('/users');
@@ -289,7 +302,7 @@ const UserProfile = () => {
               <p className="font-medium">First Name:</p>
                 {editPersonalInfo ? (
                   <input
-                    className="border-b outline-none"
+                    className="border-b border-gray-300 px-3 outline-none"
                     value={personalInfo.first_name}
                     onChange={(e) => setPersonalInfo({ ...personalInfo, first_name: e.target.value })}
                   />
@@ -300,7 +313,7 @@ const UserProfile = () => {
                 <p className="font-medium">Last Name:</p>
                 {editPersonalInfo ? (
                   <input
-                    className="border-b outline-none"
+                    className="border-b border-gray-300 px-3 outline-none"
                     value={personalInfo.second_name}
                     onChange={(e) => setPersonalInfo({ ...personalInfo, second_name: e.target.value })}
                   />
@@ -311,7 +324,7 @@ const UserProfile = () => {
                 <p className="font-medium">City:</p>
                 {editPersonalInfo ? (
                   <input
-                    className="border-b outline-none"
+                    className="border-b border-gray-300 px-3 outline-none"
                     value={personalInfo.city}
                     onChange={(e) => setPersonalInfo({ ...personalInfo, city: e.target.value })}
                   />
@@ -322,7 +335,7 @@ const UserProfile = () => {
                 <p className="font-medium">State:</p>
                 {editPersonalInfo ? (
                   <input
-                    className="border-b outline-none"
+                    className="border-b border-gray-300 px-3 outline-none"
                     value={personalInfo.state}
                     onChange={(e) => setPersonalInfo({ ...personalInfo, state: e.target.value })}
                   />
@@ -333,7 +346,7 @@ const UserProfile = () => {
                 <p className="font-medium">Country:</p>
                 {editPersonalInfo ? (
                   <input
-                    className="border-b outline-none"
+                    className="border-b border-gray-300 px-3 outline-none"
                     value={personalInfo.country}
                     onChange={(e) => setPersonalInfo({ ...personalInfo, country: e.target.value })}
                   />
@@ -344,7 +357,7 @@ const UserProfile = () => {
                 <p className="font-medium">Portfolio:</p>
                 {editPersonalInfo ? (
                   <input
-                    className="border-b outline-none"
+                    className="border-b border-gray-300 px-3 outline-none"
                     value={personalInfo.portfolio}
                     onChange={(e) => setPersonalInfo({ ...personalInfo, portfolio: e.target.value })}
                   />
@@ -355,7 +368,7 @@ const UserProfile = () => {
                 <p className="font-medium">Resume:</p>
                 {editPersonalInfo ? (
                   <input
-                    className="border-b outline-none"
+                    className="border-b border-gray-300 px-3 outline-none"
                     value={personalInfo.resume}
                     onChange={(e) => setPersonalInfo({ ...personalInfo, resume: e.target.value })}
                   />
@@ -366,7 +379,7 @@ const UserProfile = () => {
                 <p className="font-medium">Blog:</p>
                 {editPersonalInfo ? (
                   <input
-                    className="border-b outline-none"
+                    className="border-b border-gray-300 px-3 outline-none"
                     value={personalInfo.blog}
                     onChange={(e) => setPersonalInfo({ ...personalInfo, blog: e.target.value })}
                   />
@@ -377,7 +390,7 @@ const UserProfile = () => {
                 <p className="font-medium">LinkedIn:</p>
                 {editPersonalInfo ? (
                   <input
-                    className="border-b outline-none"
+                    className="border-b border-gray-300 px-3 outline-none"
                     value={personalInfo.linkedin_profile}
                     onChange={(e) => setPersonalInfo({ ...personalInfo, linkedin_profile: e.target.value })}
                   />
@@ -407,7 +420,7 @@ const UserProfile = () => {
                 {editAcademics ? (
                   <>
                     <input
-                      className="border-b w-full outline-none mb-1"
+                      className="border-b border-gray-300 px-3 w-full outline-none mb-1"
                       value={edu.institution}
                       onChange={(e) => {
                         const updated = [...academics];
@@ -416,7 +429,7 @@ const UserProfile = () => {
                       }}
                     />
                     <input
-                      className="border-b w-full outline-none mb-1"
+                      className="border-b border-gray-300 px-3 w-full outline-none mb-1"
                       value={edu.degree}
                       onChange={(e) => {
                         const updated = [...academics];
@@ -425,7 +438,7 @@ const UserProfile = () => {
                       }}
                     />
                     <input
-                      className="border-b w-full outline-none mb-1"
+                      className="border-b border-gray-300 px-3 w-full outline-none mb-1"
                       value={edu.field_of_study}
                       onChange={(e) => {
                         const updated = [...academics];
@@ -434,7 +447,7 @@ const UserProfile = () => {
                       }}
                     />
                     <input
-                      className="border-b w-full outline-none mb-1"
+                      className="border-b border-gray-300 px-3 w-full outline-none mb-1"
                       value={edu.city}
                       onChange={(e) => {
                         const updated = [...academics];
@@ -443,7 +456,7 @@ const UserProfile = () => {
                       }}
                     />
                     <textarea
-                      className="border w-full outline-none mt-1 text-sm p-2"
+                      className="border border-gray-300 px-3 rounded w-full outline-none mt-1 text-sm p-2"
                       rows={4}
                       value={edu.achievements}
                       onChange={(e) => {
@@ -497,21 +510,21 @@ const UserProfile = () => {
                   <>
                     <input
                       type="text"
-                      className="w-full border-b mb-1 outline-none"
+                      className="w-full border-b border-gray-300 px-3 mb-1 outline-none"
                       placeholder="Company Name"
                       value={exp.company_name}
                       onChange={(e) => handleWorkExpChange(idx, 'company_name', e.target.value)}
                     />
                     <input
                       type="text"
-                      className="w-full border-b mb-1 outline-none"
+                      className="w-full border-b border-gray-300 px-3 mb-1 outline-none"
                       placeholder="Job Title"
                       value={exp.job_title}
                       onChange={(e) => handleWorkExpChange(idx, 'job_title', e.target.value)}
                     />
                     <input
                       type="text"
-                      className="w-full border-b mb-1 outline-none"
+                      className="w-full border-b border-gray-300 px-3 mb-1 outline-none"
                       placeholder="Location"
                       value={exp.location}
                       onChange={(e) => handleWorkExpChange(idx, 'location', e.target.value)}
@@ -519,19 +532,19 @@ const UserProfile = () => {
                     <div className="flex gap-2">
                       <input
                         type="date"
-                        className="border-b w-1/2 outline-none"
+                        className="border-b border-gray-300 px-3 w-fit outline-none"
                         value={exp.start_date?.split('T')[0] || ''}
                         onChange={(e) => handleWorkExpChange(idx, 'start_date', e.target.value)}
                       />
                       <input
                         type="date"
-                        className="border-b w-1/2 outline-none"
+                        className="border-b border-gray-300 px-3 w-fit outline-none"
                         value={exp.end_date?.split('T')[0] || ''}
                         onChange={(e) => handleWorkExpChange(idx, 'end_date', e.target.value)}
                       />
                     </div>
                     <textarea
-                      className="w-full border p-2 rounded mt-2 outline-none"
+                      className="w-full border border-gray-300 px-3 p-2 rounded mt-2 outline-none"
                       rows={4}
                       placeholder="Key Responsibilities"
                       value={exp.key_responsibilities}
@@ -590,14 +603,14 @@ const UserProfile = () => {
                       type="text"
                       value={project.project_name || ""}
                       onChange={(e) => handleProjectChange(idx, 'project_name', e.target.value)}
-                      className="w-full mb-1 border-b outline-none"
+                      className="w-full mb-1 border-b border-gray-300 px-3 outline-none"
                       placeholder="Project Name"
                     />
                     <input
                       type="text"
                       value={project.institution || ""}
                       onChange={(e) => handleProjectChange(idx, 'institution', e.target.value)}
-                      className="w-full mb-1 border-b outline-none"
+                      className="w-full mb-1 border-b border-gray-300 px-3 outline-none"
                       placeholder="Institution"
                     />
                     <div className="flex gap-4 mb-1">
@@ -605,21 +618,21 @@ const UserProfile = () => {
                         type="month"
                         value={project.start_date ? project.start_date.slice(0, 7) : ""}
                         onChange={(e) => handleProjectChange(idx, 'start_date', e.target.value)}
-                        className="w-1/2 mb-1 border-b outline-none"
+                        className="w-fit mb-1 border-b border-gray-300 px-3 outline-none"
                         placeholder="Start Date"
                       />
                       <input
                         type="month"
                         value={project.end_date ? project.end_date.slice(0, 7) : ""}
                         onChange={(e) => handleProjectChange(idx, 'end_date', e.target.value)}
-                        className="w-1/2 mb-1 border-b outline-none"
+                        className="w-fit mb-1 border-b border-gray-300 px-3 outline-none"
                         placeholder="End Date"
                       />
                     </div>
                     <textarea
                       value={project.project_description || ""}
                       onChange={(e) => handleProjectChange(idx, 'project_description', e.target.value)}
-                      className="w-full mb-1 border rounded p-2 outline-none"
+                      className="w-full mb-1 border border-gray-300 px-3 rounded p-2 outline-none"
                       placeholder="Project Description"
                     />
                   </>
@@ -677,14 +690,14 @@ const UserProfile = () => {
                       type="text"
                       value={lang.language || ""}
                       onChange={(e) => handleLanguageChange(idx, 'language', e.target.value)}
-                      className="w-full mb-1 border-b outline-none"
+                      className="w-full mb-1 border-b border-gray-300 px-3 outline-none"
                       placeholder="Language"
                     />
                     <input
                       type="text"
                       value={lang.proficiency || ""}
                       onChange={(e) => handleLanguageChange(idx, 'proficiency', e.target.value)}
-                      className="w-full mb-1 border-b text-sm outline-none"
+                      className="w-full mb-1 border-b border-gray-300 px-3 text-sm outline-none"
                       placeholder="Proficiency (e.g., Fluent)"
                     />
                   </>
@@ -722,28 +735,28 @@ const UserProfile = () => {
                       type="text"
                       value={cert.certificate_name || ""}
                       onChange={(e) => handleCertificateChange(idx, 'certificate_name', e.target.value)}
-                      className="w-full mb-1 border-b outline-none"
+                      className="w-full mb-1 border-b border-gray-300 px-3 outline-none"
                       placeholder="Certificate Name"
                     />
                     <input
                       type="text"
                       value={cert.provider || ""}
                       onChange={(e) => handleCertificateChange(idx, 'provider', e.target.value)}
-                      className="w-full mb-1 border-b outline-none"
+                      className="w-full mb-1 border-b border-gray-300 px-3 outline-none"
                       placeholder="Provider"
                     />
                     <input
                       type="text"
                       value={cert.certificate_type || ""}
                       onChange={(e) => handleCertificateChange(idx, 'certificate_type', e.target.value)}
-                      className="w-full mb-1 border-b outline-none"
+                      className="w-full mb-1 border-b border-gray-300 px-3 outline-none"
                       placeholder="Type (e.g., certification)"
                     />
                     <input
                       type="date"
                       value={cert.completion_date ? new Date(cert.completion_date).toISOString().split("T")[0] : ""}
                       onChange={(e) => handleCertificateChange(idx, 'completion_date', e.target.value)}
-                      className="w-full mb-1 border-b outline-none"
+                      className="w-fit mb-1 border-b border-gray-300 px-3 outline-none"
                     />
                   </>
                 ) : (
@@ -842,7 +855,7 @@ const UserProfile = () => {
                       type="text"
                       value={preferences.language}
                       onChange={(e) => handlePrefChange('language', e.target.value)}
-                      className="border-b outline-none"
+                      className="border-b border-gray-300 px-3 outline-none"
                       placeholder="Language"
                     />
                   ) : (
@@ -858,7 +871,7 @@ const UserProfile = () => {
                       type="text"
                       value={preferences.timezone}
                       onChange={(e) => handlePrefChange('timezone', e.target.value)}
-                      className="border-b outline-none"
+                      className="border-b border-gray-300 px-3 outline-none"
                       placeholder="Timezone"
                     />
                   ) : (
@@ -877,31 +890,126 @@ const UserProfile = () => {
 
           {/* Subscription & CV */}
           <div className="relative w-1/2 flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
-            <div 
+            <div
+              onClick={() => setEditSubscription(prev => !prev)}
               className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
             >
-              <img src={edit} className='w-3' alt="" />
+              <img src={editSubscription ? tick : edit} className='w-3' alt="" />
             </div>
+
             <h2 className="text-lg font-semibold mb-4">Subscription & CV</h2>
+
             {user?.seekers?.[0] ? (
-              <>
-                <p className="font-medium">CL Format: {user.seekers[0].cl_format || "N/A"}</p>
-                <p className="font-medium">CV Format: {user.seekers[0].cv_format || "N/A"}</p>
-                <p className="font-medium">Subscription Tier: {user.seekers[0].subscription_tier || "N/A"}</p>
-                <p className="font-medium">Period: {user.seekers[0].subscription_period || "N/A"}</p>
-                <p className="font-medium">
-                  Subscription Start:{" "}
-                  {user.seekers[0].subscription_interval_start
-                    ? new Date(user.seekers[0].subscription_interval_start).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
-                    : "N/A"}
-                </p>
-                <p className="font-medium">
-                  Subscription End:{" "}
-                  {user.seekers[0].subscription_interval_end
-                    ? new Date(user.seekers[0].subscription_interval_end).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
-                    : "N/A"}
-                </p>
-              </>
+              editSubscription ? (
+                <div className='flex flex-col justify-between gap-4'>
+                  <div className="flex items-center gap-5">
+                    <label className="w-1/2 font-medium mb-1">CL Format</label>
+                    <input
+                      type="text"
+                      className="w-full mb-1 border-b border-gray-300 px-3 outline-none"
+                      value={user.seekers[0].cl_format || ""}
+                      onChange={(e) => {
+                        const updated = { ...user };
+                        updated.seekers[0].cl_format = e.target.value;
+                        setUser(updated);
+                      }}
+                      placeholder="CL Format"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-5">
+                    <label className="w-1/2 font-medium mb-1">CV Format</label>
+                    <input
+                      type="text"
+                      className="w-full mb-1 border-b border-gray-300 px-3 outline-none"
+                      value={user.seekers[0].cv_format || ""}
+                      onChange={(e) => {
+                        const updated = { ...user };
+                        updated.seekers[0].cv_format = e.target.value;
+                        setUser(updated);
+                      }}
+                      placeholder="CV Format"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-5">
+                    <label className="w-1/2 font-medium mb-1">Subscription Tier</label>
+                    <input
+                      type="text"
+                      className="w-full mb-1 border-b border-gray-300 px-3 outline-none"
+                      value={user.seekers[0].subscription_tier || ""}
+                      onChange={(e) => {
+                        const updated = { ...user };
+                        updated.seekers[0].subscription_tier = e.target.value;
+                        setUser(updated);
+                      }}
+                      placeholder="Subscription Tier"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-5">
+                    <label className="w-1/2 font-medium mb-1">Subscription Period</label>
+                    <input
+                      type="text"
+                      className="w-full mb-1 border-b border-gray-300 px-3 outline-none"
+                      value={user.seekers[0].subscription_period || ""}
+                      onChange={(e) => {
+                        const updated = { ...user };
+                        updated.seekers[0].subscription_period = e.target.value;
+                        setUser(updated);
+                      }}
+                      placeholder="Subscription Period"
+                    />
+                  </div>
+
+                  <div className="flex justify-start items-center gap-5">
+                    <label className="font-medium mb-1">Subscription Start Date</label>
+                    <input
+                      type="date"
+                      className="w-fit mb-1 border-b border-gray-300 px-3 outline-none"
+                      value={user.seekers[0].subscription_interval_start?.slice(0, 10) || ""}
+                      onChange={(e) => {
+                        const updated = { ...user };
+                        updated.seekers[0].subscription_interval_start = e.target.value;
+                        setUser(updated);
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-7">
+                    <label className="font-medium mb-1">Subscription End Date</label>
+                    <input
+                      type="date"
+                      className="w-fit mb-1 border-b border-gray-300 px-3 outline-none"
+                      value={user.seekers[0].subscription_interval_end?.slice(0, 10) || ""}
+                      onChange={(e) => {
+                        const updated = { ...user };
+                        updated.seekers[0].subscription_interval_end = e.target.value;
+                        setUser(updated);
+                      }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p className="font-medium">CL Format: {user.seekers[0].cl_format || "N/A"}</p>
+                  <p className="font-medium">CV Format: {user.seekers[0].cv_format || "N/A"}</p>
+                  <p className="font-medium">Subscription Tier: {user.seekers[0].subscription_tier || "N/A"}</p>
+                  <p className="font-medium">Period: {user.seekers[0].subscription_period || "N/A"}</p>
+                  <p className="font-medium">
+                    Subscription Start:{" "}
+                    {user.seekers[0].subscription_interval_start
+                      ? new Date(user.seekers[0].subscription_interval_start).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+                      : "N/A"}
+                  </p>
+                  <p className="font-medium">
+                    Subscription End:{" "}
+                    {user.seekers[0].subscription_interval_end
+                      ? new Date(user.seekers[0].subscription_interval_end).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+                      : "N/A"}
+                  </p>
+                </>
+              )
             ) : (
               <p className="text-gray-500">No subscription data available</p>
             )}
@@ -910,12 +1018,15 @@ const UserProfile = () => {
           {/* Key Skills */}
           <div className="relative w-1/2 flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
             <div 
+              onClick={() => setEditKeySkills(!editKeySkills)}
               className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
             >
-              <img src={edit} className='w-3' alt="" />
+              <img src={editKeySkills ? tick : edit} className='w-3' alt="" />
             </div>
+
             <h2 className="text-lg font-semibold mb-4">Key Skills</h2>
-            <div className="flex flex-wrap gap-2">
+
+            <div className="flex flex-wrap gap-2 mb-4">
               {user?.seekers?.[0]?.skills?.length > 0 ? (
                 user.seekers[0].skills.map((skill, idx) => (
                   <span
@@ -929,14 +1040,76 @@ const UserProfile = () => {
                 <p className="text-gray-500">No skills added</p>
               )}
             </div>
-            <div className="flex flex-col gap-1 mt-4">
-              <p className="font-medium">Primary Title: {user?.seekers?.[0]?.primary_title || "N/A"}</p>
-              <p className="font-medium">Secondary Title: {user?.seekers?.[0]?.secondary_title || "N/A"}</p>
-              <p className="font-medium">Tertiary Title: {user?.seekers?.[0]?.tertiary_title || "N/A"}</p>
-              <p className="font-medium">Proficiency Test: {user?.seekers?.[0]?.proficiency_test || 0}</p>
-              <p className="font-medium">Top Jobs Count: {user?.seekers?.[0]?.top_jobs_count || 0}</p>
-              <p className="font-medium">Total Applications: {user?.seekers?.[0]?.total_applications || 0}</p>
-              <p className="font-medium">Weekly Applications: {user?.seekers?.[0]?.weekly_applications || 0}</p>
+
+            <div className="flex flex-col gap-3">
+              {/* Primary Title */}
+              <div className="flex items-center justify-between">
+                <label className="font-medium w-1/2">Primary Title:</label>
+                {editKeySkills ? (
+                  <input
+                    type="text"
+                    value={primaryTitle}
+                    onChange={(e) => setPrimaryTitle(e.target.value)}
+                    className="border-b border-gray-300 px-3 w-1/2"
+                  />
+                ) : (
+                  <span className="w-1/2">{user?.seekers?.[0]?.primary_title || "N/A"}</span>
+                )}
+              </div>
+
+              {/* Secondary Title */}
+              <div className="flex items-center justify-between">
+                <label className="font-medium w-1/2">Secondary Title:</label>
+                {editKeySkills ? (
+                  <input
+                    type="text"
+                    value={secondaryTitle}
+                    onChange={(e) => setSecondaryTitle(e.target.value)}
+                    className="border-b border-gray-300 px-3 w-1/2"
+                  />
+                ) : (
+                  <span className="w-1/2">{user?.seekers?.[0]?.secondary_title || "N/A"}</span>
+                )}
+              </div>
+
+              {/* Tertiary Title */}
+              <div className="flex items-center justify-between">
+                <label className="font-medium w-1/2">Tertiary Title:</label>
+                {editKeySkills ? (
+                  <input
+                    type="text"
+                    value={tertiaryTitle}
+                    onChange={(e) => setTertiaryTitle(e.target.value)}
+                    className="border-b border-gray-300 px-3 w-1/2"
+                  />
+                ) : (
+                  <span className="w-1/2">{user?.seekers?.[0]?.tertiary_title || "N/A"}</span>
+                )}
+              </div>
+
+              {/* Proficiency Test */}
+              <div className="flex items-center justify-between">
+                <label className="font-medium w-1/2">Proficiency Test:</label>
+                <span className="w-1/2">{user?.seekers?.[0]?.proficiency_test || 0}</span>
+              </div>
+
+              {/* Top Jobs Count */}
+              <div className="flex items-center justify-between">
+                <label className="font-medium w-1/2">Top Jobs Count:</label>
+                <span className="w-1/2">{user?.seekers?.[0]?.top_jobs_count || 0}</span>
+              </div>
+
+              {/* Total Applications */}
+              <div className="flex items-center justify-between">
+                <label className="font-medium w-1/2">Total Applications:</label>
+                <span className="w-1/2">{user?.seekers?.[0]?.total_applications || 0}</span>
+              </div>
+
+              {/* Weekly Applications */}
+              <div className="flex items-center justify-between">
+                <label className="font-medium w-1/2">Weekly Applications:</label>
+                <span className="w-1/2">{user?.seekers?.[0]?.weekly_applications || 0}</span>
+              </div>
             </div>
           </div>
 
