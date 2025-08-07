@@ -92,7 +92,6 @@ const Questions = () => {
 
   return (
     <div>
-        <Navbar />
 
         {/* Header */}
         <div className="flex justify-between items-center px-8 py-5">

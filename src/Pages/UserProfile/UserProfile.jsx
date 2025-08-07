@@ -23,6 +23,7 @@ const UserProfile = () => {
   const [user, setUser] = useState(null);
 
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [userStatus, setUserStatus] = useState({
     is_active: false,
     email_verified: false,
@@ -62,8 +63,10 @@ const UserProfile = () => {
     if (storedUser) {
 
       const parsedUser = JSON.parse(storedUser);
+      console.log(parsedUser);
       setUser(parsedUser);
       setPhone(parsedUser?.auth_user?.phone || "");
+      setEmail(parsedUser?.auth_user?.email || "");
 
       setUserStatus({
         is_active: parsedUser?.auth_user?.is_active || false,
@@ -125,8 +128,8 @@ const UserProfile = () => {
     } else {
       navigate('/users');
     }
-    
-  }, [navigate])  
+
+  }, [navigate])
 
   const toggleStatus = (key) => {
     setUserStatus(prev => ({ ...prev, [key]: !prev[key] }));
@@ -174,39 +177,145 @@ const UserProfile = () => {
     }));
   };
 
-  // Patch User Data
-  const patchUserData = async ({ userId, collection, fields }) => {
+  const patchUserData = async (collection, fields) => {
     try {
       const token = sessionStorage.getItem('token');
 
-      const res = await fetch('https://a1.arshan.digital/a1/admin/edit/user-data', {
+    let auth_user_id =
+      user?.auth_user_id || user?.auth_user?.auth_user_id;
+      
+      if (!auth_user_id) {
+        const storedUser = sessionStorage.getItem("selectedUser");
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          auth_user_id = parsedUser?.auth_user?.id;
+        }
+      }
+
+      if (!auth_user_id) {
+        toast.error("User ID not found 😥 Try again.");
+        return;
+      }
+
+      const payload = {
+        auth_user_id,
+        collection,
+        fields,
+      };
+
+      const res = await fetch("https://a1.arshan.digital/a1/admin/edit/user-data", {
         method: "PATCH",
         headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": 'application/json'
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          auth_user_id: userId,
-          collection: collection,
-          fields: fields
-        })
-      })
-
-      if (!res.ok) {
-        toast.error("Failed to Update User Data")
-      }
+        body: JSON.stringify(payload),
+      });
 
       const data = await res.json();
 
+      if (res.ok) {
+        toast.success("User data updated successfully 🚀");
+      } else {
+        toast.error(data.message || "Update failed.");
+      }
+    } catch (err) {
+      console.error("PATCH error:", err);
+      toast.error("Something went wrong 😥");
     }
-    catch (error) {
-      toast.error("Something went wrong!");
-    }
-  }
+  };
+
+  const handlePhoneUpdate = () => {
+    patchUserData("auth_users", { phone });
+  };
+
+  const handlePersonalInfoUpdate = () => {
+    patchUserData("personal_info", personalInfo);
+  };
+
+  const updateSection = (collection, data) => {
+    patchUserData(collection, data);
+  };
+
+  const handleAcademicUpdate = (index) => {
+    patchUserData("academics", academics[index]);
+  };
+
+  const handleAllAcademicsUpdate = () => {
+    academics.forEach((entry) => {
+      patchUserData("academics", entry);
+    });
+  };
+  const handleWorkExperienceUpdate = (index) => {
+    patchUserData("work_experiences", workExperiences[index]);
+  };
+
+  const handleAllWorkExperienceUpdate = () => {
+    workExperiences.forEach((entry) => {
+      patchUserData("work_experiences", entry);
+    });
+  };
+
+  const handleProjectUpdate = (index) => {
+    patchUserData("past_projects", projects[index]);
+  };
+
+  const handleAllProjectsUpdate = () => {
+    projects.forEach((entry) => {
+      patchUserData("past_projects", entry);
+    });
+  };
+
+  const handleLanguageUpdate = (index) => {
+    patchUserData("languages", languages[index]);
+  };
+
+  const handleAllLanguagesUpdate = () => {
+    languages.forEach((entry) => {
+      patchUserData("languages", entry);
+    });
+  };
+
+  const handleCertificateUpdate = (index) => {
+    patchUserData("certificates", certificates[index]);
+  };
+
+  const handleAllCertificatesUpdate = () => {
+    certificates.forEach((entry) => {
+      patchUserData("certificates", entry);
+    });
+  };
+
+  const handleNotificationUpdate = () => {
+    patchUserData("notifications", notifications);
+  };
+
+  const handlePreferencesUpdate = () => {
+    patchUserData("preferences", preferences);
+  };
+
+
+  const handleUpdateAllSections = () => {
+    patchUserData("auth_users", { phone });
+    patchUserData("personal_info", personalInfo);
+    patchUserData("notifications", notifications);
+    patchUserData("preferences", preferences);
+
+    academics.forEach((entry) => patchUserData("academics", entry));
+    workExperiences.forEach((entry) => patchUserData("work_experiences", entry));
+    projects.forEach((entry) => patchUserData("past_projects", entry));
+    languages.forEach((entry) => patchUserData("languages", entry));
+    certificates.forEach((entry) => patchUserData("certificates", entry));
+  };
+
+
+
+
+
+
 
   return (
     <div>
-      <Navbar />
 
       <div className="flex flex-col gap-3 py-5 px-8">
 
@@ -216,7 +325,13 @@ const UserProfile = () => {
           <div className="relative w-1/2 flex flex-col items-center gap-5 border border-[#0000001F] rounded-xl px-8 py-5 bg-white">
 
             <div
-              onClick={() => setEditUserInfo(prev => !prev)} 
+              onClick={() => {
+                if (editUserInfo) {
+                  handlePhoneUpdate();
+                }
+                setEditUserInfo(prev => !prev);
+              }}
+
               className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
             >
               <img src={editUserInfo ? tick : edit} className='w-3' alt="" />
@@ -227,9 +342,18 @@ const UserProfile = () => {
             </h2>
             <div className="flex flex-col items-center gap-2 text-center">
               <img src={avatar} className='rounded-full w-24 h-24 border-4 border-gray-100 shadow' alt="Profile" />
-              <p className="font-semibold text-lg">
-                {user?.auth_user?.email || "No Email"}
-              </p>
+              {editUserInfo ? (
+                <input
+                  type="text"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="border-b outline-none text-center w-72 text-gray-700"
+                />)
+                : (<p className="font-semibold text-lg">
+                  {user?.auth_user?.email || "No Email"}
+                </p>
+
+                )}
 
               {editUserInfo ? (
                 <input
@@ -249,21 +373,21 @@ const UserProfile = () => {
               </span>
 
               <div className="w-full flex gap-3 justify-center text-center mt-4">
-                <span 
+                <span
                   onClick={() => editUserInfo && toggleStatus('is_active')}
                   className={`cursor-pointer w-[160px] px-5 py-1 text-[15px] rounded-full 
                   ${userStatus.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                   {userStatus.is_active ? "Active" : "Inactive"}
                 </span>
 
-                <span 
+                <span
                   onClick={() => editUserInfo && toggleStatus('email_verified')}
                   className={`cursor-pointer w-[160px] px-5 py-1 text-[15px] rounded-full 
                   ${userStatus.email_verified ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                   {userStatus.email_verified ? "Email Verified" : "Not Verified"}
                 </span>
 
-                <span 
+                <span
                   onClick={() => editUserInfo && toggleStatus('two_factor_enabled')}
                   className={`cursor-pointer w-[160px] px-5 py-1 text-[15px] rounded-full 
                   ${userStatus.two_factor_enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
@@ -287,104 +411,104 @@ const UserProfile = () => {
             <h2 className="text-lg font-semibold mb-4">Personal Info</h2>
             <div className="grid grid-cols-[1fr_3fr] gap-y-2">
               <p className="font-medium">First Name:</p>
-                {editPersonalInfo ? (
-                  <input
-                    className="border-b outline-none"
-                    value={personalInfo.first_name}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, first_name: e.target.value })}
-                  />
-                ) : (
-                  <p>{personalInfo.first_name || "N/A"}</p>
-                )}
+              {editPersonalInfo ? (
+                <input
+                  className="border-b outline-none"
+                  value={personalInfo.first_name}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, first_name: e.target.value })}
+                />
+              ) : (
+                <p>{personalInfo.first_name || "N/A"}</p>
+              )}
 
-                <p className="font-medium">Last Name:</p>
-                {editPersonalInfo ? (
-                  <input
-                    className="border-b outline-none"
-                    value={personalInfo.second_name}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, second_name: e.target.value })}
-                  />
-                ) : (
-                  <p>{personalInfo.second_name || "N/A"}</p>
-                )}
+              <p className="font-medium">Last Name:</p>
+              {editPersonalInfo ? (
+                <input
+                  className="border-b outline-none"
+                  value={personalInfo.second_name}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, second_name: e.target.value })}
+                />
+              ) : (
+                <p>{personalInfo.second_name || "N/A"}</p>
+              )}
 
-                <p className="font-medium">City:</p>
-                {editPersonalInfo ? (
-                  <input
-                    className="border-b outline-none"
-                    value={personalInfo.city}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, city: e.target.value })}
-                  />
-                ) : (
-                  <p>{personalInfo.city || "N/A"}</p>
-                )}
+              <p className="font-medium">City:</p>
+              {editPersonalInfo ? (
+                <input
+                  className="border-b outline-none"
+                  value={personalInfo.city}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, city: e.target.value })}
+                />
+              ) : (
+                <p>{personalInfo.city || "N/A"}</p>
+              )}
 
-                <p className="font-medium">State:</p>
-                {editPersonalInfo ? (
-                  <input
-                    className="border-b outline-none"
-                    value={personalInfo.state}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, state: e.target.value })}
-                  />
-                ) : (
-                  <p>{personalInfo.state || "N/A"}</p>
-                )}
+              <p className="font-medium">State:</p>
+              {editPersonalInfo ? (
+                <input
+                  className="border-b outline-none"
+                  value={personalInfo.state}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, state: e.target.value })}
+                />
+              ) : (
+                <p>{personalInfo.state || "N/A"}</p>
+              )}
 
-                <p className="font-medium">Country:</p>
-                {editPersonalInfo ? (
-                  <input
-                    className="border-b outline-none"
-                    value={personalInfo.country}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, country: e.target.value })}
-                  />
-                ) : (
-                  <p>{personalInfo.country || "N/A"}</p>
-                )}
+              <p className="font-medium">Country:</p>
+              {editPersonalInfo ? (
+                <input
+                  className="border-b outline-none"
+                  value={personalInfo.country}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, country: e.target.value })}
+                />
+              ) : (
+                <p>{personalInfo.country || "N/A"}</p>
+              )}
 
-                <p className="font-medium">Portfolio:</p>
-                {editPersonalInfo ? (
-                  <input
-                    className="border-b outline-none"
-                    value={personalInfo.portfolio}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, portfolio: e.target.value })}
-                  />
-                ) : (
-                  <p>{personalInfo.portfolio || "N/A"}</p>
-                )}
+              <p className="font-medium">Portfolio:</p>
+              {editPersonalInfo ? (
+                <input
+                  className="border-b outline-none"
+                  value={personalInfo.portfolio}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, portfolio: e.target.value })}
+                />
+              ) : (
+                <p>{personalInfo.portfolio || "N/A"}</p>
+              )}
 
-                <p className="font-medium">Resume:</p>
-                {editPersonalInfo ? (
-                  <input
-                    className="border-b outline-none"
-                    value={personalInfo.resume}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, resume: e.target.value })}
-                  />
-                ) : (
-                  <p>{personalInfo.resume || "N/A"}</p>
-                )}
+              <p className="font-medium">Resume:</p>
+              {editPersonalInfo ? (
+                <input
+                  className="border-b outline-none"
+                  value={personalInfo.resume}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, resume: e.target.value })}
+                />
+              ) : (
+                <p>{personalInfo.resume || "N/A"}</p>
+              )}
 
-                <p className="font-medium">Blog:</p>
-                {editPersonalInfo ? (
-                  <input
-                    className="border-b outline-none"
-                    value={personalInfo.blog}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, blog: e.target.value })}
-                  />
-                ) : (
-                  <p>{personalInfo.blog || "N/A"}</p>
-                )}
+              <p className="font-medium">Blog:</p>
+              {editPersonalInfo ? (
+                <input
+                  className="border-b outline-none"
+                  value={personalInfo.blog}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, blog: e.target.value })}
+                />
+              ) : (
+                <p>{personalInfo.blog || "N/A"}</p>
+              )}
 
-                <p className="font-medium">LinkedIn:</p>
-                {editPersonalInfo ? (
-                  <input
-                    className="border-b outline-none"
-                    value={personalInfo.linkedin_profile}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, linkedin_profile: e.target.value })}
-                  />
-                ) : (
-                  <p>{personalInfo.linkedin_profile || "N/A"}</p>
-                )}
-            </div>        
+              <p className="font-medium">LinkedIn:</p>
+              {editPersonalInfo ? (
+                <input
+                  className="border-b outline-none"
+                  value={personalInfo.linkedin_profile}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, linkedin_profile: e.target.value })}
+                />
+              ) : (
+                <p>{personalInfo.linkedin_profile || "N/A"}</p>
+              )}
+            </div>
           </div>
 
         </div>
@@ -392,7 +516,7 @@ const UserProfile = () => {
         {/* Academics */}
         <div className="relative flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
           {/* Edit button */}
-          <div 
+          <div
             onClick={() => setEditAcademics(!editAcademics)}
             className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
           >
@@ -483,7 +607,7 @@ const UserProfile = () => {
 
         {/* Work Experience */}
         <div className="relative flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
-          <div 
+          <div
             onClick={() => setEditWorkExperience(prev => !prev)}
             className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
           >
@@ -572,7 +696,7 @@ const UserProfile = () => {
 
         {/* Projects */}
         <div className="relative flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
-          <div 
+          <div
             className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
             onClick={() => setEditProjects(prev => !prev)}
           >
@@ -630,16 +754,16 @@ const UserProfile = () => {
                     <p className="text-gray-500">
                       {project.start_date
                         ? new Date(project.start_date).toLocaleDateString("en-US", {
-                            month: "short",
-                            year: "numeric",
-                          })
+                          month: "short",
+                          year: "numeric",
+                        })
                         : "N/A"}{" "}
                       -{" "}
                       {project.end_date
                         ? new Date(project.end_date).toLocaleDateString("en-US", {
-                            month: "short",
-                            year: "numeric",
-                          })
+                          month: "short",
+                          year: "numeric",
+                        })
                         : "Ongoing"}
                     </p>
                     {project.project_description && (
@@ -659,7 +783,7 @@ const UserProfile = () => {
 
         {/* Languages */}
         <div className="relative flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
-          <div 
+          <div
             className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
             onClick={() => setEditLanguages(prev => !prev)}
           >
@@ -704,7 +828,7 @@ const UserProfile = () => {
 
         {/* Certificates */}
         <div className="relative flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
-          <div 
+          <div
             className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
             onClick={() => setEditCertificates(prev => !prev)}
           >
@@ -768,7 +892,7 @@ const UserProfile = () => {
 
           {/* Notifications */}
           <div className="relative w-1/2 flex flex-col justify-between gap-3 border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
-            <div 
+            <div
               className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
               onClick={() => setEditNotifications((prev) => !prev)}
             >
@@ -788,14 +912,12 @@ const UserProfile = () => {
                   <span className="font-medium">{label}</span>
                   <div
                     onClick={() => editNotifications && handleNotificationToggle(key)}
-                    className={`w-10 h-5 rounded-full p-1 flex items-center cursor-pointer transition ${
-                      notifications[key] ? "bg-[#2c6472]" : "bg-gray-300"
-                    }`}
+                    className={`w-10 h-5 rounded-full p-1 flex items-center cursor-pointer transition ${notifications[key] ? "bg-[#2c6472]" : "bg-gray-300"
+                      }`}
                   >
                     <div
-                      className={`w-4 h-4 rounded-full bg-white shadow transform transition ${
-                        notifications[key] ? "translate-x-4.5" : "-translate-x-0.5"
-                      }`}
+                      className={`w-4 h-4 rounded-full bg-white shadow transform transition ${notifications[key] ? "translate-x-4.5" : "-translate-x-0.5"
+                        }`}
                     ></div>
                   </div>
                 </div>
@@ -805,7 +927,7 @@ const UserProfile = () => {
 
           {/* Preferences */}
           <div className="relative w-1/2 flex flex-col border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
-            <div 
+            <div
               className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
               onClick={() => setEditPreferences((prev) => !prev)}
             >
@@ -822,14 +944,12 @@ const UserProfile = () => {
                   <span className="font-medium">Cookie Policy</span>
                   <div
                     onClick={() => editPreferences && handlePrefChange('cookie_policy', !preferences.cookie_policy)}
-                    className={`w-10 h-5 rounded-full p-1 flex items-center cursor-pointer transition ${
-                      preferences.cookie_policy ? "bg-[#2c6472]" : "bg-gray-300"
-                    }`}
+                    className={`w-10 h-5 rounded-full p-1 flex items-center cursor-pointer transition ${preferences.cookie_policy ? "bg-[#2c6472]" : "bg-gray-300"
+                      }`}
                   >
                     <div
-                      className={`w-4 h-4 rounded-full bg-white shadow transform transition ${
-                        preferences.cookie_policy ? "translate-x-4.5" : "-translate-x-0.5"
-                      }`}
+                      className={`w-4 h-4 rounded-full bg-white shadow transform transition ${preferences.cookie_policy ? "translate-x-4.5" : "-translate-x-0.5"
+                        }`}
                     ></div>
                   </div>
                 </div>
@@ -877,7 +997,7 @@ const UserProfile = () => {
 
           {/* Subscription & CV */}
           <div className="relative w-1/2 flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
-            <div 
+            <div
               className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
             >
               <img src={edit} className='w-3' alt="" />
@@ -909,7 +1029,7 @@ const UserProfile = () => {
 
           {/* Key Skills */}
           <div className="relative w-1/2 flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
-            <div 
+            <div
               className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
             >
               <img src={edit} className='w-3' alt="" />

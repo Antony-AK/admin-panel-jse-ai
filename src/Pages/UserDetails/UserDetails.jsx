@@ -78,7 +78,6 @@ const UserDetails = () => {
 
   return (
     <div>
-        <Navbar />
 
         <div className="flex justify-between items-center px-8 py-5">
           <div className="relative w-full max-w-[500px]">
