@@ -16,6 +16,7 @@ const Questions = () => {
 
   const levels = ["Beginner", "Intermediate", "Fluent/Native"];
 
+  // Fetch Questions
   const fetchQuestions = async () => {
     try {
 
@@ -32,6 +33,7 @@ const Questions = () => {
       })
       if(!res.ok){
         toast.error('Failed to fetch Questions')
+        return;
       }
       const data = await res.json();
       setQuestions(data.questions || []);
@@ -45,6 +47,35 @@ const Questions = () => {
   useEffect(() => {
     fetchQuestions();
   }, []);
+
+  const handleDelete = async (id) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      if (!token) {
+        toast.error("No User found. Please log in.");
+        return;
+      }
+
+      const res = await fetch(`https://a1.arshan.digital/a1/admin/exam/questions/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      })
+
+      if (!res.ok) {
+        toast.error('Failed to delete question');
+        return;
+      }
+
+      toast.success('Question deleted successfully');
+      setQuestions(prev => prev.filter(q => q.question_id !== id));
+    }
+    catch (error) {
+      toast.error("Something went wrong!");
+    }
+  }
 
   // Focus Blur
   useEffect(() => {
@@ -60,7 +91,7 @@ const Questions = () => {
   }, []);
 
   return (
-    <div className=''>
+    <div>
         <Navbar />
 
         {/* Header */}
@@ -98,19 +129,19 @@ const Questions = () => {
               <div className="font-medium text-[#0000006F] flex gap-5">
                 <p>Marks: <span className='font-normal'>{q.marks || 0}</span></p>
                 <p>Language: <span className='font-normal'>{q.language || "N/A"}</span></p>
-                <p>Type: <span className='font-normal'>{q.type || "N/A"}</span></p>
+                <p>Type: <span className='font-normal'>{(q.type || "N/A").toUpperCase()}</span></p>
                 <p>Status: <span className='font-normal'>{q.is_active ? "Active" : "Inactive"}</span></p>
               </div>
 
               <div className="flex flex-col gap-3 font-medium">
-                {q.options.map((opt) => (
-                  <label key={opt.id} className="flex items-center gap-5 cursor-pointer w-fit">
+                {q.options?.map((opt, idx) => (
+                  <label key={`${q.question_id}-${idx}`} className="flex items-center gap-5 cursor-pointer w-fit">
                     <input 
-                     type="radio" 
-                     name={`q${index}`} 
-                     className="w-4 h-4 accent-[#2c6472]" 
-                     checked={q.correct_option_ids?.includes(opt.id)} 
-                     readOnly
+                      type="radio" 
+                      name={`q${index}`} 
+                      className="w-4 h-4 accent-[#2c6472]" 
+                      checked={opt.is_correct} 
+                      readOnly
                     />
                     <span>{opt.text}</span>
                   </label>
@@ -136,7 +167,12 @@ const Questions = () => {
                   >
                     <ul className="p-2 text-left text-sm">
                       <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Edit</li>
-                      <li className="px-4 py-2 hover:bg-gray-100 text-red-500 cursor-pointer">Remove</li>
+                      <li
+                       onClick={() => handleDelete(q.question_id)}
+                       className="px-4 py-2 hover:bg-gray-100 text-red-500 cursor-pointer"
+                      >
+                        Remove
+                      </li>
                     </ul>
                   </motion.div>
                 )}            
@@ -147,8 +183,18 @@ const Questions = () => {
 
           ))}  
 
-          {showModal && <QuestionModal onClose={() => setShowModal(false)} />}
+          {showModal && 
+            <QuestionModal 
+             onClose={() => setShowModal(false)}
+             onSuccess={() => fetchQuestions()}
+            />}
 
+        </div>
+
+        <div className="flex justify-center items-center gap-8 py-10 px-8">
+            <div className="bg-[#2c6472] px-3 py-1 text-white rounded-md cursor-pointer">Prev</div>
+            <p>1 Of 5</p>
+            <div className="bg-[#2c6472] px-3 py-1 text-white rounded-md cursor-pointer">Next</div>
         </div>
 
     </div>
