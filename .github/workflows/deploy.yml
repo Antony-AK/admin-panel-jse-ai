@@ -22,10 +22,10 @@ jobs:
           port: 22
           script: |
             echo "Stopping existing container (if any)..."
-            docker stop jse-ai-admin-panel_container || true
+            docker stop admin-panel-jse-ai_container || true
 
             echo "Removing existing container (if any)..."
-            docker rm jse-ai-admin-panel_container || true
+            docker rm admin-panel-jse-ai_container || true
 
             echo "Pruning unused Docker images..."
             docker image prune -af
@@ -34,11 +34,11 @@ jobs:
             echo "${{ secrets.PAT_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GIT_USERNAME}} --password-stdin
 
             echo "Pulling latest Docker image..."
-            docker pull ghcr.io/antony-ak/jse-ai-admin-panel:latest
+            docker pull ghcr.io/antony-ak/admin-panel-jse-ai:latest
 
             echo "Running new Docker container..."
             docker run -d \
-              --name jse-ai-admin-panel_container \
+              --name admin-panel-jse-ai_container \
               -p 4040:4040 \
-              ghcr.io/antony-ak/jse-ai-admin-panel:latest
+              ghcr.io/antony-ak/admin-panel-jse-ai:latest
               
