@@ -21,6 +21,7 @@ const UserProfile = () => {
   const [editPreferences, setEditPreferences] = useState(false);
   const [editSubscription, setEditSubscription] = useState(false);
 
+
   const [user, setUser] = useState(null);
 
   const [phone, setPhone] = useState("");
@@ -63,6 +64,13 @@ const UserProfile = () => {
   const [secondaryTitle, setSecondaryTitle] = useState('');
   const [tertiaryTitle, setTertiaryTitle] = useState('');
   const [proficiencyTest, setProficiencyTest] = useState(0);
+  const [topJobsCount, setTopJobsCount] = useState(0);
+  const [totalApplications, setTotalApplications] = useState(0);
+  const [weeklyApplications, setWeeklyApplications] = useState(0);
+
+  // Convert array to comma-separated string for editing
+  const [skillsInput, setSkillsInput] = useState(keySkills.join(", "));
+
 
   useEffect(() => {
     const storedUser = sessionStorage.getItem('selectedUser');
@@ -137,6 +145,11 @@ const UserProfile = () => {
       setSecondaryTitle(parsedUser?.seekers?.[0]?.secondary_title || '');
       setTertiaryTitle(parsedUser?.seekers?.[0]?.tertiary_title || '');
       setProficiencyTest(parsedUser?.seekers?.[0]?.proficiency_test || 0);
+      setProficiencyTest(parsedUser?.seekers?.[0]?.proficiency_test || 0);
+      setTopJobsCount(parsedUser?.seekers?.[0]?.top_jobs_count || 0);
+      setTotalApplications(parsedUser?.seekers?.[0]?.total_applications || 0);
+      setWeeklyApplications(parsedUser?.seekers?.[0]?.weekly_applications || 0);
+
 
     } else {
       navigate('/users');
@@ -147,6 +160,71 @@ const UserProfile = () => {
   const toggleStatus = (key) => {
     setUserStatus(prev => ({ ...prev, [key]: !prev[key] }));
   };
+
+  const handleUserInfoUpdate = () => {
+    const updatedFields = {
+      phone,
+      email,
+      is_active: userStatus.is_active,
+      email_verified: userStatus.email_verified,
+      two_factor_enabled: userStatus.two_factor_enabled
+    };
+
+    patchUserData("auth_users", updatedFields).then(() => {
+      // manually update user state for instant reflection in UI
+      setUser(prev => ({
+        ...prev,
+        auth_user: {
+          ...prev.auth_user,
+          phone,
+          email,
+          is_active: userStatus.is_active,
+          email_verified: userStatus.email_verified,
+          two_factor_enabled: userStatus.two_factor_enabled
+        }
+      }));
+    });
+  };
+
+
+  const handlePersonalInfoUpdate = () => {
+    const updatedFields = {
+      personal_info: {
+        first_name: personalInfo.first_name,
+        second_name: personalInfo.second_name,
+        city: personalInfo.city,
+        state: personalInfo.state,
+        country: personalInfo.country,
+        linkedin_profile: personalInfo.linkedin_profile,
+        external_links: [
+          { type: "portfolio", url: personalInfo.portfolio },
+          { type: "resume", url: personalInfo.resume },
+          { type: "blog", url: personalInfo.blog },
+        ]
+      }
+    };
+
+    patchUserData("seekers", updatedFields).then(() => {
+      setUser(prev => {
+        const updatedUser = {
+          ...prev,
+          seekers: [
+            {
+              ...prev.seekers[0],
+              personal_info: updatedFields.personal_info
+            }
+          ]
+        };
+
+        sessionStorage.setItem("selectedUser", JSON.stringify(updatedUser));
+
+        return updatedUser;
+      });
+    });
+  };
+
+
+
 
   const handleWorkExpChange = (index, key, value) => {
     setWorkExperiences(prev =>
@@ -194,9 +272,9 @@ const UserProfile = () => {
     try {
       const token = sessionStorage.getItem('token');
 
-    let auth_user_id =
-      user?.auth_user_id || user?.auth_user?.auth_user_id;
-      
+      let auth_user_id =
+        user?.auth_user_id || user?.auth_user?.auth_user_id;
+
       if (!auth_user_id) {
         const storedUser = sessionStorage.getItem("selectedUser");
         if (storedUser) {
@@ -228,103 +306,248 @@ const UserProfile = () => {
       const data = await res.json();
 
       if (res.ok) {
-        toast.success("User data updated successfully 🚀");
+        toast.success("User data updated successfully ");
       } else {
         toast.error(data.message || "Update failed.");
       }
     } catch (err) {
       console.error("PATCH error:", err);
-      toast.error("Something went wrong 😥");
+      toast.error("Something went wrong ");
     }
   };
 
-  const handlePhoneUpdate = () => {
-    patchUserData("auth_users", { phone });
-  };
 
-  const handlePersonalInfoUpdate = () => {
-    patchUserData("personal_info", personalInfo);
-  };
-
-  const updateSection = (collection, data) => {
-    patchUserData(collection, data);
-  };
 
   const handleAcademicUpdate = (index) => {
-    patchUserData("academics", academics[index]);
-  };
+    const updatedFields = {
+      academics: [academics[index]]
+    };
 
-  const handleAllAcademicsUpdate = () => {
-    academics.forEach((entry) => {
-      patchUserData("academics", entry);
+    patchUserData("seekers", { academics: updatedFields.academics }).then(() => {
+      // Update session storage
+      setUser((prev) => {
+        const updatedUser = {
+          ...prev,
+          seekers: [
+            {
+              ...prev.seekers[0],
+              academics: prev.seekers[0].academics.map((item, i) =>
+                i === index ? updatedFields.academics[0] : item
+              )
+            }
+          ]
+        };
+
+        sessionStorage.setItem("selectedUser", JSON.stringify(updatedUser));
+        return updatedUser;
+      });
+
     });
   };
-  const handleWorkExperienceUpdate = (index) => {
-    patchUserData("work_experiences", workExperiences[index]);
-  };
 
-  const handleAllWorkExperienceUpdate = () => {
-    workExperiences.forEach((entry) => {
-      patchUserData("work_experiences", entry);
+  const handleWorkExperienceUpdate = (index) => {
+    const updatedFields = {
+      work_experiences: [workExperiences[index]]
+    };
+
+    patchUserData("seekers", { work_experiences: updatedFields.work_experiences }).then(() => {
+      setUser((prev) => {
+        const updatedUser = {
+          ...prev,
+          seekers: [
+            {
+              ...prev.seekers[0],
+              work_experiences: prev.seekers[0].work_experiences.map((item, i) =>
+                i === index ? updatedFields.work_experiences[0] : item
+              )
+            }
+          ]
+        };
+
+        sessionStorage.setItem("selectedUser", JSON.stringify(updatedUser));
+        return updatedUser;
+      });
+
     });
   };
 
   const handleProjectUpdate = (index) => {
-    patchUserData("past_projects", projects[index]);
-  };
+    const updatedFields = {
+      past_projects: [projects[index]]
+    };
 
-  const handleAllProjectsUpdate = () => {
-    projects.forEach((entry) => {
-      patchUserData("past_projects", entry);
+    patchUserData("seekers", { past_projects: updatedFields.past_projects }).then(() => {
+      setUser((prev) => {
+        const updatedUser = {
+          ...prev,
+          seekers: [
+            {
+              ...prev.seekers[0],
+              past_projects: prev.seekers[0].past_projects.map((item, i) =>
+                i === index ? updatedFields.past_projects[0] : item
+              )
+            }
+          ]
+        };
+
+        sessionStorage.setItem("selectedUser", JSON.stringify(updatedUser));
+        return updatedUser;
+      });
+
     });
   };
 
-  const handleLanguageUpdate = (index) => {
-    patchUserData("languages", languages[index]);
-  };
 
   const handleAllLanguagesUpdate = () => {
-    languages.forEach((entry) => {
-      patchUserData("languages", entry);
+    patchUserData("seekers", { languages }).then(() => {
+      setUser((prev) => {
+        const updatedUser = {
+          ...prev,
+          seekers: [
+            {
+              ...prev.seekers[0],
+              languages
+            }
+          ]
+        };
+
+        sessionStorage.setItem("selectedUser", JSON.stringify(updatedUser));
+        return updatedUser;
+      });
+
     });
   };
 
-  const handleCertificateUpdate = (index) => {
-    patchUserData("certificates", certificates[index]);
-  };
 
   const handleAllCertificatesUpdate = () => {
-    certificates.forEach((entry) => {
-      patchUserData("certificates", entry);
+    patchUserData("seekers", { certificates }).then(() => {
+      setUser((prev) => {
+        const updatedUser = {
+          ...prev,
+          seekers: [
+            {
+              ...prev.seekers[0],
+              certificates
+            }
+          ]
+        };
+
+        sessionStorage.setItem("selectedUser", JSON.stringify(updatedUser));
+        return updatedUser;
+      });
+
     });
   };
 
+
   const handleNotificationUpdate = () => {
-    patchUserData("notifications", notifications);
+    patchUserData("notifications", notifications).then(() => {
+      setUser((prev) => {
+        const updatedUser = {
+          ...prev,
+          notifications: [
+            {
+              ...notifications
+            }
+          ]
+        };
+
+        sessionStorage.setItem("selectedUser", JSON.stringify(updatedUser));
+        return updatedUser;
+      });
+
+    });
   };
+
 
   const handlePreferencesUpdate = () => {
-    patchUserData("preferences", preferences);
+    patchUserData("preferences", preferences).then(() => {
+      setUser((prev) => {
+        const updatedUser = {
+          ...prev,
+          preferences: [
+            {
+              ...preferences
+            }
+          ]
+        };
+
+        sessionStorage.setItem("selectedUser", JSON.stringify(updatedUser));
+        return updatedUser;
+      });
+
+    });
+  };
+
+  const handleSubscriptionUpdate = () => {
+    const updatedFields = {
+      cl_format: user.seekers[0].cl_format || "",
+      cv_format: user.seekers[0].cv_format || "",
+      subscription_tier: user.seekers[0].subscription_tier || "",
+      subscription_period: user.seekers[0].subscription_period || "",
+      subscription_interval_start: user.seekers[0].subscription_interval_start || "",
+      subscription_interval_end: user.seekers[0].subscription_interval_end || ""
+    };
+
+    patchUserData("seekers", updatedFields).then(() => {
+      setUser((prev) => {
+        const updatedUser = {
+          ...prev,
+          seekers: [
+            {
+              ...prev.seekers[0],
+              ...updatedFields,
+            }
+          ]
+        };
+
+        sessionStorage.setItem("selectedUser", JSON.stringify(updatedUser));
+        return updatedUser;
+      });
+
+    });
   };
 
 
-  const handleUpdateAllSections = () => {
-    patchUserData("auth_users", { phone });
-    patchUserData("personal_info", personalInfo);
-    patchUserData("notifications", notifications);
-    patchUserData("preferences", preferences);
 
-    academics.forEach((entry) => patchUserData("academics", entry));
-    workExperiences.forEach((entry) => patchUserData("work_experiences", entry));
-    projects.forEach((entry) => patchUserData("past_projects", entry));
-    languages.forEach((entry) => patchUserData("languages", entry));
-    certificates.forEach((entry) => patchUserData("certificates", entry));
+  const handleKeySkillsUpdate = () => {
+    // Convert the string to an array before saving
+    const cleanedSkills = skillsInput.split(",").map(s => s.trim()).filter(Boolean);
+
+    const updatedFields = {
+      key_skills: cleanedSkills,
+      primary_title: primaryTitle,
+      secondary_title: secondaryTitle,
+      tertiary_title: tertiaryTitle,
+      proficiency_test: proficiencyTest === "" ? null : Number(proficiencyTest),
+      top_jobs_count: topJobsCount === "" ? null : Number(topJobsCount),
+      total_applications: totalApplications === "" ? null : Number(totalApplications),
+      weekly_applications: weeklyApplications === "" ? null : Number(weeklyApplications),
+    };
+
+    patchUserData("seekers", updatedFields).then(() => {
+      setUser(prev => {
+        const updatedUser = {
+          ...prev,
+          seekers: [
+            {
+              ...prev.seekers[0],
+              ...updatedFields,
+            }
+          ]
+        };
+
+        sessionStorage.setItem("selectedUser", JSON.stringify(updatedUser));
+        return updatedUser;
+      });
+
+      // Update local state so UI refreshes
+      setKeySkills(cleanedSkills);
+
+      // Close edit mode after saving
+      setEditKeySkills(false);
+    });
   };
-
-
-
-
-
 
 
   return (
@@ -340,7 +563,7 @@ const UserProfile = () => {
             <div
               onClick={() => {
                 if (editUserInfo) {
-                  handlePhoneUpdate();
+                  handleUserInfoUpdate();  // ✅ updates everything now
                 }
                 setEditUserInfo(prev => !prev);
               }}
@@ -415,8 +638,12 @@ const UserProfile = () => {
           <div className="relative w-1/2 flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-5 bg-white">
 
             <div
-              onClick={() => setEditPersonalInfo(!editPersonalInfo)}
-              className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
+              onClick={() => {
+                if (editPersonalInfo) {
+                  handlePersonalInfoUpdate();
+                }
+                setEditPersonalInfo(prev => !prev);
+              }} className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
             >
               <img src={editPersonalInfo ? tick : edit} className='w-3' alt="Edit" />
             </div>
@@ -424,104 +651,104 @@ const UserProfile = () => {
             <h2 className="text-lg font-semibold mb-4">Personal Info</h2>
             <div className="grid grid-cols-[1fr_3fr] gap-y-2">
               <p className="font-medium">First Name:</p>
-                {editPersonalInfo ? (
-                  <input
-                    className="border-b border-gray-300 px-3 outline-none"
-                    value={personalInfo.first_name}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, first_name: e.target.value })}
-                  />
-                ) : (
-                  <p>{personalInfo.first_name || "N/A"}</p>
-                )}
+              {editPersonalInfo ? (
+                <input
+                  className="border-b border-gray-300 px-3 outline-none"
+                  value={personalInfo.first_name}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, first_name: e.target.value })}
+                />
+              ) : (
+                <p>{personalInfo.first_name || "N/A"}</p>
+              )}
 
-                <p className="font-medium">Last Name:</p>
-                {editPersonalInfo ? (
-                  <input
-                    className="border-b border-gray-300 px-3 outline-none"
-                    value={personalInfo.second_name}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, second_name: e.target.value })}
-                  />
-                ) : (
-                  <p>{personalInfo.second_name || "N/A"}</p>
-                )}
+              <p className="font-medium">Last Name:</p>
+              {editPersonalInfo ? (
+                <input
+                  className="border-b border-gray-300 px-3 outline-none"
+                  value={personalInfo.second_name}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, second_name: e.target.value })}
+                />
+              ) : (
+                <p>{personalInfo.second_name || "N/A"}</p>
+              )}
 
-                <p className="font-medium">City:</p>
-                {editPersonalInfo ? (
-                  <input
-                    className="border-b border-gray-300 px-3 outline-none"
-                    value={personalInfo.city}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, city: e.target.value })}
-                  />
-                ) : (
-                  <p>{personalInfo.city || "N/A"}</p>
-                )}
+              <p className="font-medium">City:</p>
+              {editPersonalInfo ? (
+                <input
+                  className="border-b border-gray-300 px-3 outline-none"
+                  value={personalInfo.city}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, city: e.target.value })}
+                />
+              ) : (
+                <p>{personalInfo.city || "N/A"}</p>
+              )}
 
-                <p className="font-medium">State:</p>
-                {editPersonalInfo ? (
-                  <input
-                    className="border-b border-gray-300 px-3 outline-none"
-                    value={personalInfo.state}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, state: e.target.value })}
-                  />
-                ) : (
-                  <p>{personalInfo.state || "N/A"}</p>
-                )}
+              <p className="font-medium">State:</p>
+              {editPersonalInfo ? (
+                <input
+                  className="border-b border-gray-300 px-3 outline-none"
+                  value={personalInfo.state}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, state: e.target.value })}
+                />
+              ) : (
+                <p>{personalInfo.state || "N/A"}</p>
+              )}
 
-                <p className="font-medium">Country:</p>
-                {editPersonalInfo ? (
-                  <input
-                    className="border-b border-gray-300 px-3 outline-none"
-                    value={personalInfo.country}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, country: e.target.value })}
-                  />
-                ) : (
-                  <p>{personalInfo.country || "N/A"}</p>
-                )}
+              <p className="font-medium">Country:</p>
+              {editPersonalInfo ? (
+                <input
+                  className="border-b border-gray-300 px-3 outline-none"
+                  value={personalInfo.country}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, country: e.target.value })}
+                />
+              ) : (
+                <p>{personalInfo.country || "N/A"}</p>
+              )}
 
-                <p className="font-medium">Portfolio:</p>
-                {editPersonalInfo ? (
-                  <input
-                    className="border-b border-gray-300 px-3 outline-none"
-                    value={personalInfo.portfolio}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, portfolio: e.target.value })}
-                  />
-                ) : (
-                  <p>{personalInfo.portfolio || "N/A"}</p>
-                )}
+              <p className="font-medium">Portfolio:</p>
+              {editPersonalInfo ? (
+                <input
+                  className="border-b border-gray-300 px-3 outline-none"
+                  value={personalInfo.portfolio}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, portfolio: e.target.value })}
+                />
+              ) : (
+                <p>{personalInfo.portfolio || "N/A"}</p>
+              )}
 
-                <p className="font-medium">Resume:</p>
-                {editPersonalInfo ? (
-                  <input
-                    className="border-b border-gray-300 px-3 outline-none"
-                    value={personalInfo.resume}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, resume: e.target.value })}
-                  />
-                ) : (
-                  <p>{personalInfo.resume || "N/A"}</p>
-                )}
+              <p className="font-medium">Resume:</p>
+              {editPersonalInfo ? (
+                <input
+                  className="border-b border-gray-300 px-3 outline-none"
+                  value={personalInfo.resume}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, resume: e.target.value })}
+                />
+              ) : (
+                <p>{personalInfo.resume || "N/A"}</p>
+              )}
 
-                <p className="font-medium">Blog:</p>
-                {editPersonalInfo ? (
-                  <input
-                    className="border-b border-gray-300 px-3 outline-none"
-                    value={personalInfo.blog}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, blog: e.target.value })}
-                  />
-                ) : (
-                  <p>{personalInfo.blog || "N/A"}</p>
-                )}
+              <p className="font-medium">Blog:</p>
+              {editPersonalInfo ? (
+                <input
+                  className="border-b border-gray-300 px-3 outline-none"
+                  value={personalInfo.blog}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, blog: e.target.value })}
+                />
+              ) : (
+                <p>{personalInfo.blog || "N/A"}</p>
+              )}
 
-                <p className="font-medium">LinkedIn:</p>
-                {editPersonalInfo ? (
-                  <input
-                    className="border-b border-gray-300 px-3 outline-none"
-                    value={personalInfo.linkedin_profile}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, linkedin_profile: e.target.value })}
-                  />
-                ) : (
-                  <p>{personalInfo.linkedin_profile || "N/A"}</p>
-                )}
-            </div>        
+              <p className="font-medium">LinkedIn:</p>
+              {editPersonalInfo ? (
+                <input
+                  className="border-b border-gray-300 px-3 outline-none"
+                  value={personalInfo.linkedin_profile}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, linkedin_profile: e.target.value })}
+                />
+              ) : (
+                <p>{personalInfo.linkedin_profile || "N/A"}</p>
+              )}
+            </div>
           </div>
 
         </div>
@@ -530,8 +757,12 @@ const UserProfile = () => {
         <div className="relative flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
           {/* Edit button */}
           <div
-            onClick={() => setEditAcademics(!editAcademics)}
-            className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
+            onClick={() => {
+              if (editAcademics) {
+                academics.forEach((_, index) => handleAcademicUpdate(index));
+              }
+              setEditAcademics(!editAcademics);
+            }} className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
           >
             <img src={editAcademics ? tick : edit} className='w-3' alt="Edit" />
           </div>
@@ -621,8 +852,12 @@ const UserProfile = () => {
         {/* Work Experience */}
         <div className="relative flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
           <div
-            onClick={() => setEditWorkExperience(prev => !prev)}
-            className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
+            onClick={() => {
+              if (editWorkExperience) {
+                workExperiences.forEach((_, index) => handleWorkExperienceUpdate(index));
+              }
+              setEditWorkExperience(!editWorkExperience);
+            }} className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
           >
             <img src={editWorkExperience ? tick : edit} className='w-3' alt="" />
           </div>
@@ -711,8 +946,12 @@ const UserProfile = () => {
         <div className="relative flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
           <div
             className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
-            onClick={() => setEditProjects(prev => !prev)}
-          >
+            onClick={() => {
+              if (editProjects) {
+                projects.forEach((_, index) => handleProjectUpdate(index));
+              }
+              setEditProjects(prev => !prev);
+            }}          >
             <img src={editProjects ? tick : edit} className='w-3' alt="Edit" />
           </div>
 
@@ -798,8 +1037,12 @@ const UserProfile = () => {
         <div className="relative flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
           <div
             className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
-            onClick={() => setEditLanguages(prev => !prev)}
-          >
+            onClick={() => {
+              if (editLanguages) {
+                handleAllLanguagesUpdate(); // Update languages only when exiting edit mode
+              }
+              setEditLanguages(prev => !prev);
+            }}          >
             <img src={editLanguages ? tick : edit} className='w-3' alt="Edit" />
           </div>
 
@@ -843,8 +1086,12 @@ const UserProfile = () => {
         <div className="relative flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
           <div
             className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
-            onClick={() => setEditCertificates(prev => !prev)}
-          >
+            onClick={() => {
+              if (editCertificates) {
+                handleAllCertificatesUpdate(); // 🚀 Updates on exiting edit mode
+              }
+              setEditCertificates(prev => !prev); // 👇 Toggles edit mode
+            }}          >
             <img src={editCertificates ? tick : edit} className='w-3' alt="Toggle Edit" />
           </div>
 
@@ -907,7 +1154,12 @@ const UserProfile = () => {
           <div className="relative w-1/2 flex flex-col justify-between gap-3 border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
             <div
               className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
-              onClick={() => setEditNotifications((prev) => !prev)}
+              onClick={() => {
+                if (editNotifications) {
+                  handleNotificationUpdate(); // 🔥 Save on toggle off
+                }
+                setEditNotifications(prev => !prev); // 📝 Toggle edit mode
+              }}
             >
               <img src={editNotifications ? tick : edit} className='w-3' alt="Toggle Edit" />
             </div>
@@ -942,8 +1194,12 @@ const UserProfile = () => {
           <div className="relative w-1/2 flex flex-col border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
             <div
               className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
-              onClick={() => setEditPreferences((prev) => !prev)}
-            >
+              onClick={() => {
+                if (editPreferences) {
+                  handlePreferencesUpdate(); // Save on toggle off
+                }
+                setEditPreferences(prev => !prev); // Toggle edit mode
+              }}            >
               <img src={editPreferences ? tick : edit} className='w-3' alt="Toggle Edit" />
             </div>
 
@@ -1011,7 +1267,12 @@ const UserProfile = () => {
           {/* Subscription & CV */}
           <div className="relative w-1/2 flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
             <div
-              onClick={() => setEditSubscription(prev => !prev)}
+              onClick={() => {
+                if (editSubscription) {
+                  handleSubscriptionUpdate(); // Save data when toggling off
+                }
+                setEditSubscription(prev => !prev); // Toggle edit mode
+              }}
               className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
             >
               <img src={editSubscription ? tick : edit} className='w-3' alt="" />
@@ -1137,9 +1398,13 @@ const UserProfile = () => {
 
           {/* Key Skills */}
           <div className="relative w-1/2 flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
-            <div 
-              onClick={() => setEditKeySkills(!editKeySkills)}
-              className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
+            <div
+              onClick={() => {
+                if (editKeySkills) {
+                  handleKeySkillsUpdate(); // Save changes before turning off edit
+                }
+                setEditKeySkills(prev => !prev); // Toggle edit mode
+              }} className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
             >
               <img src={editKeySkills ? tick : edit} className='w-3' alt="" />
             </div>
@@ -1147,8 +1412,19 @@ const UserProfile = () => {
             <h2 className="text-lg font-semibold mb-4">Key Skills</h2>
 
             <div className="flex flex-wrap gap-2 mb-4">
-              {user?.seekers?.[0]?.skills?.length > 0 ? (
-                user.seekers[0].skills.map((skill, idx) => (
+              {editKeySkills ? (
+                <input
+                  type="text"
+                  value={skillsInput}
+                  onChange={(e) => {
+                    setSkillsInput(e.target.value);
+                    setKeySkills(e.target.value.split(",").map(s => s.trim()));
+                  }}
+                  placeholder="Enter skills separated by commas"
+                  className="border-b border-gray-300 px-3 w-full"
+                />
+              ) : keySkills.length > 0 ? (
+                keySkills.map((skill, idx) => (
                   <span
                     key={idx}
                     className="px-3 py-1 bg-gray-100 rounded-full text-sm"
@@ -1210,25 +1486,70 @@ const UserProfile = () => {
               {/* Proficiency Test */}
               <div className="flex items-center justify-between">
                 <label className="font-medium w-1/2">Proficiency Test:</label>
-                <span className="w-1/2">{user?.seekers?.[0]?.proficiency_test || 0}</span>
+                {editKeySkills ? (
+                  <input
+                    type="number"
+                    value={proficiencyTest}
+                    onChange={(e) => setProficiencyTest(e.target.value)}
+                    className="border-b border-gray-300 px-3 w-1/2"
+                  />
+                ) : (
+                  <span className="w-1/2">
+                    {proficiencyTest === "" ? "N/A" : proficiencyTest}
+                  </span>
+                )}
+
               </div>
 
               {/* Top Jobs Count */}
               <div className="flex items-center justify-between">
                 <label className="font-medium w-1/2">Top Jobs Count:</label>
-                <span className="w-1/2">{user?.seekers?.[0]?.top_jobs_count || 0}</span>
+                {editKeySkills ? (
+                  <input
+                    type="number"
+                    value={topJobsCount}
+                    onChange={(e) => setTopJobsCount(e.target.value)}
+                    className="border-b border-gray-300 px-3 w-1/2"
+                  />
+                ) : (
+                  <span className="w-1/2">
+                    {topJobsCount === "" ? "N/A" : topJobsCount}
+                  </span>
+                )}
               </div>
 
               {/* Total Applications */}
               <div className="flex items-center justify-between">
                 <label className="font-medium w-1/2">Total Applications:</label>
-                <span className="w-1/2">{user?.seekers?.[0]?.total_applications || 0}</span>
+                {editKeySkills ? (
+                  <input
+                    type="number"
+                    value={totalApplications}
+                    onChange={(e) => setTotalApplications(e.target.value)}
+                    className="border-b border-gray-300 px-3 w-1/2"
+                  />
+                ) : (
+                  <span className="w-1/2">
+                    {totalApplications === "" ? "N/A" : totalApplications}
+                  </span>
+                )}
               </div>
 
               {/* Weekly Applications */}
               <div className="flex items-center justify-between">
                 <label className="font-medium w-1/2">Weekly Applications:</label>
-                <span className="w-1/2">{user?.seekers?.[0]?.weekly_applications || 0}</span>
+                {editKeySkills ? (
+                  <input
+                    type="number"
+                    value={weeklyApplications}
+                    onChange={(e) => setWeeklyApplications(e.target.value)}
+                    className="border-b border-gray-300 px-3 w-1/2"
+                  />
+                ) : (
+                  <span className="w-1/2">
+                    {weeklyApplications === "" ? "N/A" : weeklyApplications}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -1238,7 +1559,7 @@ const UserProfile = () => {
 
       </div>
 
-    </div>
+    </div >
   )
 }
 

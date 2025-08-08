@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import { motion, AnimatePresence } from "framer-motion";
 import arrow from '../../assets/drop-arrow.png'
 
-const QuestionModels = ({ onClose, onSuccess }) => {
+const QuestionModels = ({ onClose, onSuccess, initialData  }) => {
+    
 
   const [questionData, setQuestionData] = useState({
     question_id: "",
@@ -32,6 +33,8 @@ const QuestionModels = ({ onClose, onSuccess }) => {
     is_active: true
   })
 
+  
+
   const [openType, setOpenType] = useState(false);
   const [openLanguage, setOpenLanguage] = useState(false);
 
@@ -40,6 +43,12 @@ const QuestionModels = ({ onClose, onSuccess }) => {
   const handleInputChange = (field, value) => {
     setQuestionData(prev => ({ ...prev, [field]: value }));
   };
+
+    useEffect(() => {
+    if (initialData) {
+      setQuestionData(initialData); // prefill form
+    }
+  }, [initialData]);
 
   // Update options
   const handleOptionChange = (index, value) => {
@@ -124,57 +133,91 @@ const QuestionModels = ({ onClose, onSuccess }) => {
 
   // Post Questions
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    const payload = preparePayload();
-    console.log("Payload being sent:", payload);
+  e.preventDefault();
+  const payload = preparePayload();
 
-    if (!payload.question.trim()) {
-        toast.error("Please enter the question.");
-        return;
-    }
-
-    if (payload.correct_option_ids.length === 0) {
-        toast.error("Please select the correct option.");
-        return;
-    }
-
-    try {
-        const token = sessionStorage.getItem('token');
-        if(!token) {
-            toast.error("No User found. Please log in.");
-            return;
-        }
-
-        const res = await fetch('https://a1.arshan.digital/a1/admin/exam/questions', {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload)
-        })
-
-        if(!res.ok) {
-            toast.error('Failed to Update Question')
-            return;
-        }
-
-        const data = await res.json();
-        console.log("Response:", data);
-        if (onSuccess) onSuccess();
-        onClose();
-        
-    } catch (error) {
-        toast.error("Something went wrong!");
-    }
+  if (!payload.question.trim()) {
+    toast.error("Please enter the question.");
+    return;
   }
+  if (payload.correct_option_ids.length === 0) {
+    toast.error("Please select the correct option.");
+    return;
+  }
+
+  try {
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+      toast.error("No User found. Please log in.");
+      return;
+    }
+
+    const method = initialData ? "PUT" : "POST";
+    const url = initialData 
+      ? `https://a1.arshan.digital/a1/admin/exam/questions/${initialData.question_id}`
+      : `https://a1.arshan.digital/a1/admin/exam/questions`;
+
+    const res = await fetch(url, {
+      method,
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      toast.error(initialData ? 'Failed to update question' : 'Failed to create question');
+      return;
+    }
+
+    const data = await res.json();
+    console.log("Response:", data);
+    toast.success(initialData ? 'Question updated successfully' : 'Question created successfully');
+
+    if (onSuccess) onSuccess();
+    onClose();
+
+  } catch (error) {
+    toast.error("Something went wrong!");
+  }
+};
+
+const defaultQuestionObject = {
+  question_id: "",
+  type: "mcq",
+  title: "",
+  description: "",
+  question: "",
+  options: [
+    { id: "opt1", text: "", media: "", is_correct: false },
+    { id: "opt2", text: "", media: "", is_correct: false },
+    { id: "opt3", text: "", media: "", is_correct: false },
+    { id: "opt4", text: "", media: "", is_correct: false },
+  ],
+  correct_option_ids: [],
+  answer_key: "",
+  marks: "",
+  negative_mark: "",
+  difficulty: "Beginner",
+  language: "German",
+  randomize_options: false,
+  tags: [],
+  category: "",
+  sub_category: "",
+  attachments: [],
+  explanation: "",
+  is_active: true
+};
+
 
   return (
     <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
 
       <div className="w-[60%] max-w-[800px] flex flex-col gap-5 bg-white p-6 rounded-lg shadow-lg">
 
-        <h2 className="text-xl font-semibold">Add Questions</h2>
+        <h2 className="text-xl font-semibold">  {initialData ? "Edit Questions" : "Add Questions"}
+</h2>
 
         <div className="flex-1 max-h-[460px] overflow-y-auto pr-2 mt-4">
 
@@ -373,7 +416,8 @@ const QuestionModels = ({ onClose, onSuccess }) => {
                         Cancel
                     </button>
                     <button type="submit" className='w-40 py-2 bg-[#2c6472] text-sm text-white rounded-lg cursor-pointer'>
-                        Post
+                          {initialData ? "Edit" : "Post"}
+
                     </button>
                 </div>
 

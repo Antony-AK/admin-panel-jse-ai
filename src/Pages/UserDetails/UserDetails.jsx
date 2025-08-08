@@ -112,11 +112,11 @@ const UserDetails = () => {
 
         </div>
 
-        <div className="flex justify-center items-center gap-8 py-10 px-8">
+        {/* <div className="flex justify-center items-center gap-8 py-10 px-8">
             <div className="bg-[#2c6472] px-3 py-1 text-white rounded-md cursor-pointer">Prev</div>
             <p>1 Of 5</p>
             <div className="bg-[#2c6472] px-3 py-1 text-white rounded-md cursor-pointer">Next</div>
-        </div>         
+        </div>          */}
               
     </div>
   )

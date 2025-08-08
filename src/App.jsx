@@ -1,5 +1,5 @@
 import React from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes , useLocation } from 'react-router-dom'
 import { ToastContainer, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -10,11 +10,17 @@ import Questions from './Pages/Questions/Questions';
 import UserDetails from './Pages/UserDetails/UserDetails';
 import UserProfile from './Pages/UserProfile/UserProfile';
 import Navbar from './Components/Navbar/Navbar';
+import ChangePassword from './Pages/ChangePassword/ChangePassword ';
 
 const App = () => {
+    const location = useLocation()
+
+
+    const showNavbar = location.pathname !== '/'
+
   return (
     <>
-    <Navbar/>
+      {showNavbar && <Navbar />}
 
     <Routes>
       <Route path='/' element={<Login />}/>
@@ -23,6 +29,7 @@ const App = () => {
       <Route path='/questions' element={<Questions />}/>
       <Route path='/users' element={<UserDetails />}/>
       <Route path='/users/:id' element={<UserProfile />}/>
+      <Route path='/change-password' element={<ChangePassword/>} />
     </Routes>
 
     <ToastContainer

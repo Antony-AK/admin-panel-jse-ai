@@ -14,10 +14,13 @@ const Announcements = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editAnnouncementData, setEditAnnouncementData] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({});
+
 
 
   // Get Announcements
-  const fetchAnnouncements = async () => {
+  const fetchAnnouncements = async (page = 1) => {
     try {
       const token = sessionStorage.getItem('token');
       if (!token) {
@@ -34,8 +37,13 @@ const Announcements = () => {
         toast.error('Failed to fetch announcements');
         return;
       }
+
+
       const data = await res.json();
       setAnnouncements(data.announcements || []);
+      setPagination(data.pagination || {});
+      setCurrentPage(data.pagination?.current || page);
+
     } catch (error) {
       toast.error("Something went wrong!");
     }
@@ -184,10 +192,31 @@ const Announcements = () => {
       </div>
 
       <div className="flex justify-center items-center gap-8 py-10 px-8">
-        <div className="bg-[#2c6472] px-3 py-1 text-white rounded-md cursor-pointer">Prev</div>
-        <p>1 Of 5</p>
-        <div className="bg-[#2c6472] px-3 py-1 text-white rounded-md cursor-pointer">Next</div>
+        <div
+          className={`bg-[#2c6472] px-3 py-1 text-white rounded-md ${!pagination.prev && 'opacity-50 cursor-not-allowed'}`}
+          onClick={() => {
+            if (pagination.prev) {
+              fetchAnnouncements(currentPage - 1);
+            }
+          }}
+        >
+          Prev
+        </div>
+
+        <p>{pagination.current} of {Math.ceil(pagination.total / pagination.per_page)}</p>
+
+        <div
+          className={`bg-[#2c6472] px-3 py-1 text-white rounded-md ${!pagination.next && 'opacity-50 cursor-not-allowed'}`}
+          onClick={() => {
+            if (pagination.next) {
+              fetchAnnouncements(currentPage + 1);
+            }
+          }}
+        >
+          Next
+        </div>
       </div>
+
 
       {showModal &&
         <AnnouncementsModal
