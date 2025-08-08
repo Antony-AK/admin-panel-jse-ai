@@ -549,6 +549,18 @@ const UserProfile = () => {
     });
   };
 
+  // Inside your component, update your edit toggle handler like this:
+  const toggleEditKeySkills = () => {
+    if (editKeySkills) {
+      handleKeySkillsUpdate(); // Save changes before turning off edit
+    } else {
+      // When turning ON edit mode, fill input with current skills
+      setSkillsInput(keySkills.join(", "));
+    }
+    setEditKeySkills(prev => !prev);
+  };
+
+
 
   return (
     <div>
@@ -1399,29 +1411,25 @@ const UserProfile = () => {
           {/* Key Skills */}
           <div className="relative w-1/2 flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
             <div
-              onClick={() => {
-                if (editKeySkills) {
-                  handleKeySkillsUpdate(); // Save changes before turning off edit
-                }
-                setEditKeySkills(prev => !prev); // Toggle edit mode
-              }} className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
+              onClick={toggleEditKeySkills}
+              className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
             >
               <img src={editKeySkills ? tick : edit} className='w-3' alt="" />
             </div>
 
             <h2 className="text-lg font-semibold mb-4">Key Skills</h2>
 
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-4 max-h-24 overflow-y-auto">
               {editKeySkills ? (
-                <input
-                  type="text"
+                <textarea
                   value={skillsInput}
                   onChange={(e) => {
                     setSkillsInput(e.target.value);
                     setKeySkills(e.target.value.split(",").map(s => s.trim()));
                   }}
                   placeholder="Enter skills separated by commas"
-                  className="border-b border-gray-300 px-3 w-full"
+                  className="border border-gray-300 px-3 py-2 w-full resize-y rounded"
+                  rows={3} // You can adjust rows for initial height
                 />
               ) : keySkills.length > 0 ? (
                 keySkills.map((skill, idx) => (
@@ -1435,6 +1443,7 @@ const UserProfile = () => {
               ) : (
                 <p className="text-gray-500">No skills added</p>
               )}
+
             </div>
 
             <div className="flex flex-col gap-3">
