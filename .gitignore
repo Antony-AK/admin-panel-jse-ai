@@ -25,3 +25,9 @@ dist-ssr
 
 
 node_modules
+
+
+server.go
+prod.sh
+trim.sh
+Dockerfile
