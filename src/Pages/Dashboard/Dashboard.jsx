@@ -32,7 +32,7 @@ const Dashboard = () => {
       </div>
 
       {/* Application By Language Card */}
-      <div className="absolute top-6 left-[1080px]  w-[20%]">
+      <div className="absolute top-6 left-[1090px]  w-[20%]">
         <ApplicationByLanguageCard />
       </div>
 
@@ -65,7 +65,7 @@ const Dashboard = () => {
         <CoverLettersCard />
       </div>
 
-      <div className="absolute top-[350px] left-[1080px] w-[30%]">
+      <div className="absolute top-[350px] left-[1090px] w-[30%]">
         <InterviewsCard />
       </div>
 
