@@ -20,8 +20,8 @@ const QuestionModels = ({ onClose, onSuccess, initialData  }) => {
     ],
     correct_option_ids: [],
     answer_key: "",
-    marks: "",
-    negative_mark: "",
+    marks: "1",
+    negative_mark: "0",
     difficulty: "Beginner",
     language: "German",
     randomize_options: false,
@@ -197,8 +197,8 @@ const defaultQuestionObject = {
   ],
   correct_option_ids: [],
   answer_key: "",
-  marks: "",
-  negative_mark: "",
+  marks: "1",
+  negative_mark: "0",
   difficulty: "Beginner",
   language: "German",
   randomize_options: false,
@@ -337,7 +337,7 @@ const defaultQuestionObject = {
                         id='marks' 
                         type="number"
                         value={questionData.marks}
-                        onChange={(e) => handleInputChange("marks", e.target.value === "" ? "" : parseInt(e.target.value))}
+                        onChange={(e) => handleInputChange("marks", e.target.value === "" ? "" : parseFloat(e.target.value))}
                         className='w-20 border border-[#0000001C] text-sm outline-none rounded-lg p-2 text-center'
                         />
                     </div>
@@ -349,7 +349,7 @@ const defaultQuestionObject = {
                         id='negative' 
                         type="number"
                         value={questionData.negative_mark}
-                        onChange={(e) => handleInputChange("negative_mark", e.target.value === "" ? "" : parseInt(e.target.value))}
+                        onChange={(e) => handleInputChange("negative_mark", e.target.value === "" ? "" : parseFloat(e.target.value))}
                         className='w-20 border border-[#0000001C] text-sm outline-none rounded-lg p-2 text-center'
                         />
                     </div>

@@ -61,7 +61,7 @@ const Dashboard = () => {
         <UserProgressCard />
       </div>
 
-      <div className="absolute top-[780px] left-10 w-[46%]">
+      <div className="absolute top-[780px] left-10 w-[45%]">
         <CoverLettersCard />
       </div>
 
@@ -69,7 +69,7 @@ const Dashboard = () => {
         <InterviewsCard />
       </div>
 
-      <div className="absolute top-[780px] left-[750px] w-[46%]">
+      <div className="absolute top-[780px] left-[730px] w-[45%]">
         <CvsGeneratedCard />
       </div>
 
