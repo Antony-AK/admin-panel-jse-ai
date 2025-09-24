@@ -59,16 +59,16 @@ const Login = () => {
             {/* Right Side */}
             <div className="flex flex-col justify-center items-center gap-6 w-[40%] ">
 
-                <div className='flex justify-center items-center w-32 h-10'>
-                    <img src={jse_logo} className='mx-auto w-20 h-16' alt="" />
+                <div className='flex justify-center items-center w-12 h-10 -ms-5'>
+                    <img src={jse_logo} className='mx-auto w-20 h-12' alt="" />
                     <p className='text-2xl font-semibold'>Arshan</p>
                 </div>
-                <h2 className='text-center font-semibold  text-2xl '>Welcome  to  BotMyJob  Admin  Panel</h2>
+                <h2 className='text-center font-semibold  text-2xl '>Welcome to Admin Panel</h2>
 
-                <div className="w-full flex justify-center items-center border border-[#0000001F] rounded-2xl py-3 gap-5 cursor-pointer">
+                {/* <div className="w-full flex justify-center items-center border border-[#0000001F] rounded-2xl py-3 gap-5 cursor-pointer">
                     <img src={google} className=' w-7' alt="" />
                     <p className='text-[#0000004F]'>Continue with Google</p>
-                </div>
+                </div> */}
 
                 <div className="w-full flex justify-center items-center gap-5">
                     <div className="border-t border-t-[#0000001F] w-full"></div>

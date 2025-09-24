@@ -15,6 +15,7 @@ const Questions = () => {
   const [questions, setQuestions] = useState([]);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [allQuestions, setAllQuestions] = useState([]);
+  const [loading, setLoading] = useState(false); // 👈 loading state
   const [pagination, setPagination] = useState({
     current: 1,
     total: 1,
@@ -27,25 +28,37 @@ const Questions = () => {
   const levels = ["All", "Beginner", "Intermediate", "Fluent/Native"];
 
   // Fetch Questions
+  // Fetch Questions
   const fetchQuestions = async (page = 1) => {
     try {
+      setLoading(true); // 👈 start loading
 
-      const token = sessionStorage.getItem('token');
+      const token = sessionStorage.getItem("token");
       if (!token) {
         toast.error("No User found. Please log in.");
         return;
       }
-      const res = await fetch('https://a1.arshan.digital/a1/admin/exam/questions', {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
+
+      // build offset & limit for pagination
+      const offset = (page - 1) * pagination.per_page;
+
+      const res = await fetch(
+        `https://a1.arshan.digital/a1/admin/exam/questions?offset=${offset}&limit=${pagination.per_page}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
-      })
+      );
+
       if (!res.ok) {
-        toast.error('Failed to fetch Questions')
+        toast.error("Failed to fetch Questions");
         return;
       }
+
       const data = await res.json();
+
       setAllQuestions(data.questions || []);
       setQuestions(data.questions || []);
 
@@ -53,14 +66,73 @@ const Questions = () => {
         setPagination({
           current: data.pagination.current,
           total: Math.ceil(data.pagination.total / data.pagination.per_page),
-          per_page: data.pagination.per_page
+          per_page: data.pagination.per_page,
         });
       }
-
     } catch (error) {
       toast.error("Something went wrong!");
+    } finally {
+      setLoading(false); // 👈 end loading
     }
-  }
+  };
+
+  // ✅ Separate Fetch for Difficulty Filter
+  const fetchQuestionsByDifficulty = async (page = 1, difficulty = level) => {
+    try {
+      setLoading(true);
+
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        toast.error("No User found. Please log in.");
+        return;
+      }
+
+      const offset = (page - 1) * pagination.per_page;
+
+      const query = new URLSearchParams({
+        offset,
+        limit: pagination.per_page,
+      });
+
+      if (difficulty !== "All") {
+        query.append("difficulty", difficulty);
+      }
+
+      const res = await fetch(
+        `https://a1.arshan.digital/a1/admin/exam/questions?${query.toString()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!res.ok) {
+        toast.error("Failed to fetch Questions");
+        return;
+      }
+
+      const data = await res.json();
+
+      setAllQuestions(data.questions || []);
+      setQuestions(data.questions || []);
+
+      if (data.pagination) {
+        setPagination({
+          current: data.pagination.current,
+          total: Math.ceil(data.pagination.total / data.pagination.per_page),
+          per_page: data.pagination.per_page,
+        });
+      }
+    } catch (error) {
+      toast.error("Something went wrong!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
 
   // Initial load
   useEffect(() => {
@@ -123,15 +195,9 @@ const Questions = () => {
       ${level === item ? "bg-[#2c6472] text-white" : "bg-transparent text-[#2c6472] border border-[#2c6472]"}`}
               onClick={() => {
                 setLevel(item);
-                if (item === "All") {
-                  setQuestions(allQuestions);
-                } else {
-                  const filtered = allQuestions.filter(q =>
-                    q.difficulty?.toLowerCase() === item.toLowerCase()
-                  );
-                  setQuestions(filtered);
-                }
+                fetchQuestionsByDifficulty(1, item);
               }}
+
             >
               <p className='font-medium'>{item}</p>
             </button>
@@ -231,22 +297,29 @@ const Questions = () => {
 
       </div>
 
+      {/* Pagination */}
       <div className="flex justify-center items-center gap-8 py-10 px-8">
         <button
-          disabled={pagination.current === 1}
+          disabled={pagination.current === 1 || loading}
           onClick={() => fetchQuestions(pagination.current - 1)}
-          className={`px-3 py-1 rounded-md cursor-pointer ${pagination.current === 1 ? 'bg-gray-300' : 'bg-[#2c6472] text-white'
+          className={`px-3 py-1 rounded-md cursor-pointer ${pagination.current === 1 || loading
+            ? "bg-gray-300"
+            : "bg-[#2c6472] text-white"
             }`}
         >
           Prev
         </button>
 
-        <p>{pagination.current} of {pagination.total}</p>
+        <p>
+          {pagination.current} of {pagination.total}
+        </p>
 
         <button
-          disabled={pagination.current === pagination.total}
+          disabled={pagination.current === pagination.total || loading}
           onClick={() => fetchQuestions(pagination.current + 1)}
-          className={`px-3 py-1 rounded-md cursor-pointer ${pagination.current === pagination.total ? 'bg-gray-300 ' : 'bg-[#2c6472] text-white'
+          className={`px-3 py-1 rounded-md cursor-pointer ${pagination.current === pagination.total || loading
+            ? "bg-gray-300"
+            : "bg-[#2c6472] text-white"
             }`}
         >
           Next
