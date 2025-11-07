@@ -76,7 +76,7 @@ const Navbar = () => {
       className="flex items-center gap-1 cursor-pointer select-none hover:text-[#2c6472] transition-colors"
       onClick={() => setBotMenuOpen((prev) => !prev)}
     >
-      <span className={botMenuOpen ? "text-[#2c6472]" : ""}>BotMyJob</span>
+      <span className={botMenuOpen ? "text-[#2c6472]" : ""}>Careerminer</span>
       <motion.img
         src={arrow}
         alt=""
