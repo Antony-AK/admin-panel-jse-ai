@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { toast } from 'react-toastify';
+import { ADMIN_URL } from "../../utils/api"
 
 const AnnouncementsModels = ({ onClose, onSuccess, editData = null }) => {
 
@@ -44,8 +45,8 @@ const AnnouncementsModels = ({ onClose, onSuccess, editData = null }) => {
       }
 
       const url = editData
-        ? `https://a1.arshan.digital/a1/admin/announcements/${editData.id}`
-        : 'https://a1.arshan.digital/a1/admin/announcements';
+        ? `${ADMIN_URL}/announcements/${editData.id}`
+        : `${ADMIN_URL}/announcements`;
 
       const method = editData ? "PUT" : "POST";
 

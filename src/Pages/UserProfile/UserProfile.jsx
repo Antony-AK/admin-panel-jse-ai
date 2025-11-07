@@ -5,6 +5,7 @@ import avatar from '../../assets/avatar.png'
 import { useNavigate } from 'react-router-dom';
 import edit from '../../assets/edit.png'
 import tick from '../../assets/tick.svg'
+import { ADMIN_URL } from "../../utils/api"
 
 const UserProfile = () => {
 
@@ -294,7 +295,7 @@ const UserProfile = () => {
         fields,
       };
 
-      const res = await fetch("https://a1.arshan.digital/a1/admin/edit/user-data", {
+      const res = await fetch(`${ADMIN_URL}/edit/user-data`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

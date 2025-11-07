@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import { motion, AnimatePresence } from "framer-motion";
 import arrow from '../../assets/drop-arrow.png'
+import { ADMIN_URL } from "../../utils/api"
 
 const QuestionModels = ({ onClose, onSuccess, initialData  }) => {
     
@@ -154,8 +155,8 @@ const QuestionModels = ({ onClose, onSuccess, initialData  }) => {
 
     const method = initialData ? "PUT" : "POST";
     const url = initialData 
-      ? `https://a1.arshan.digital/a1/admin/exam/questions/${initialData.question_id}`
-      : `https://a1.arshan.digital/a1/admin/exam/questions`;
+      ? `${ADMIN_URL}/exam/questions/${initialData.question_id}`
+      : `${ADMIN_URL}/exam/questions`;
 
     const res = await fetch(url, {
       method,

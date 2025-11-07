@@ -5,6 +5,7 @@ import Navbar from '../../Components/Navbar/Navbar'
 import search_icon from '../../assets/search.png'
 import avatar from '../../assets/avatar.png'
 import edit from '../../assets/edit.png'
+import { ADMIN_URL } from '../../utils/api';
 
 const UserDetails = () => {
 
@@ -51,7 +52,7 @@ const UserDetails = () => {
         return;
       }
 
-      const res = await fetch('https://a1.arshan.digital/a1/admin/edit/user-data', {
+      const res = await fetch(`${ADMIN_URL}/edit/user-data`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,

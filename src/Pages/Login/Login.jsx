@@ -4,6 +4,7 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import login_img from '../../assets/login-img.png'
 import jse_logo from '../../assets/arshanlogo.png'
 import google from '../../assets/google.png'
+import { ADMIN_URL } from "../../utils/api"
 
 const Login = () => {
 
@@ -22,7 +23,7 @@ const Login = () => {
         }
 
         try {
-            const response = await fetch("https://a1.arshan.digital/a1/admin/login", {
+            const response = await fetch(`${ADMIN_URL}/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

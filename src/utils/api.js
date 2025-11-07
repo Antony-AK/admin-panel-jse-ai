@@ -1,2 +1,1 @@
-
-export const ADMIN_URL = "https://a1.arshan.digital/a1/admin"
+export const ADMIN_URL = "https://a1.careerminer.de/a1/admin"

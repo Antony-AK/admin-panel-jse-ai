@@ -5,6 +5,7 @@ import Navbar from '../../Components/Navbar/Navbar'
 import search_icon from '../../assets/search.png'
 import ellipsis from '../../assets/ellipsis.svg'
 import AnnouncementsModal from '../../Components/PopUps/AnnouncementsModels'
+import { ADMIN_URL } from "../../utils/api"
 
 const Announcements = () => {
 
@@ -27,7 +28,7 @@ const Announcements = () => {
         toast.error('No User found. Please log in.');
         return;
       }
-      const res = await fetch('https://a1.arshan.digital/a1/admin/announcements', {
+      const res = await fetch(`${ADMIN_URL}/announcements`, {
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
@@ -91,7 +92,7 @@ const Announcements = () => {
         return;
       }
 
-      const res = await fetch(`https://a1.arshan.digital/a1/admin/announcements/${id}`, {
+      const res = await fetch(`${ADMIN_URL}/announcements/${id}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -191,6 +192,7 @@ const Announcements = () => {
 
       </div>
 
+      {pagination.total > pagination.per_page && (
       <div className="flex justify-center items-center gap-8 py-10 px-8">
         <div
           className={`bg-[#2c6472] px-3 py-1 text-white rounded-md ${!pagination.prev && 'opacity-50 cursor-not-allowed'}`}
@@ -216,6 +218,7 @@ const Announcements = () => {
           Next
         </div>
       </div>
+      )}
 
 
       {showModal &&

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Navbar from '../../Components/Navbar/Navbar'
 import ellipsis from '../../assets/ellipsis.svg'
 import QuestionModal from '../../Components/PopUps/QuestionModels'
+import { ADMIN_URL } from "../../utils/api"
 
 const Questions = () => {
 
@@ -43,7 +44,7 @@ const Questions = () => {
       const offset = (page - 1) * pagination.per_page;
 
       const res = await fetch(
-        `https://a1.arshan.digital/a1/admin/exam/questions?offset=${offset}&limit=${pagination.per_page}`,
+        `${ADMIN_URL}/exam/questions?offset=${offset}&limit=${pagination.per_page}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -99,7 +100,7 @@ const Questions = () => {
       }
 
       const res = await fetch(
-        `https://a1.arshan.digital/a1/admin/exam/questions?${query.toString()}`,
+        `${ADMIN_URL}/exam/questions?${query.toString()}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -147,7 +148,7 @@ const Questions = () => {
         return;
       }
 
-      const res = await fetch(`https://a1.arshan.digital/a1/admin/exam/questions/${id}`, {
+      const res = await fetch(`${ADMIN_URL}/exam/questions/${id}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`,

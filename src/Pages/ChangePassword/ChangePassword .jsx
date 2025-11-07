@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { ADMIN_URL } from "../../utils/api"
 
 function parseJwt(token) {
   try {
@@ -39,7 +40,7 @@ const ChangePassword = () => {
 
     try {
       const res = await fetch(
-        "https://a1.arshan.digital/a1/admin/utils/change-password",
+        `${ADMIN_URL}/utils/change-password`,
         {
           method: "POST",
           headers: {
