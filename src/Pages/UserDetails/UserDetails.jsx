@@ -101,37 +101,48 @@ const UserDetails = () => {
   return (
     <div>
       <div className="px-8 py-5">
-        <div className={`grid ${showAll ? "grid-cols-5" : "grid-cols-5"} gap-4`}>
+        <div
+          className={`grid ${showAll ? "grid-cols-5" : "grid-cols-5"} gap-6 transition-all duration-300`}
+        >
           {(showAll
             ? [
-                { label: "Dashboard Complete", value: stats.dashboard_complete_count },
-                { label: "Data Entry Complete", value: stats.data_entry_complete_count },
-                { label: "Email Verified", value: stats.email_verified_count },
-                { label: "Job Consumers", value: stats.job_consumer_count },
-                { label: "Pro Tier", value: stats.pro_tier_count },
-                { label: "Admin Role", value: stats.role_admin_count },
-                { label: "Developer Role", value: stats.role_developer_count },
-                { label: "Seeker Role", value: stats.role_seeker_count },
-                { label: "Subscribed", value: stats.subscribed_count },
-                { label: "Total Users", value: stats.total },
-              ]
+              { label: "Total Users", value: stats.total },
+              { label: "Pro Tier", value: stats.pro_tier_count },
+              { label: "Email Verified", value: stats.email_verified_count },
+              { label: "Data Entry Complete", value: stats.data_entry_complete_count },
+              { label: "Dashboard Complete", value: stats.dashboard_complete_count },
+              { label: "Job Consumers", value: stats.job_consumer_count },
+              { label: "Subscribed", value: stats.subscribed_count },
+              { label: "Seeker Role", value: stats.role_seeker_count },
+              { label: "Developer Role", value: stats.role_developer_count },
+              { label: "Admin Role", value: stats.role_admin_count },
+            ]
             : [
-                { label: "Dashboard Complete", value: stats.dashboard_complete_count },
-                { label: "Data Entry Complete", value: stats.data_entry_complete_count },
-                { label: "Email Verified", value: stats.email_verified_count },
-                { label: "Job Consumers", value: stats.job_consumer_count },
-                { label: "Pro Tier", value: stats.pro_tier_count },
-              ]
+              { label: "Total Users", value: stats.total },
+              { label: "Pro Tier", value: stats.pro_tier_count },
+              { label: "Email Verified", value: stats.email_verified_count },
+              { label: "Data Entry Complete", value: stats.data_entry_complete_count },
+              { label: "Dashboard Complete", value: stats.dashboard_complete_count },
+            ]
           ).map((item, index) => (
             <div
               key={index}
-              className="bg-white p-4 rounded-xl flex flex-col gap-2 border border-gray-300"
+              className="relative bg-gradient-to-br from-white/80 to-gray-100/40 backdrop-blur-xl shadow-[0_4px_10px_rgba(0,0,0,0.03)] border border-gray-200 hover:shadow-[0_8px_20px_rgba(0,0,0,0.1)] hover:scale-[1.03] transition-all duration-300 ease-in-out rounded-2xl p-5 flex flex-col gap-3"
             >
-              <p className="text-sm text-gray-500">{item.label}</p>
-              <h2 className="font-bold text-2xl text-[#2c6472]">{item.value}</h2>
+              {/* Accent Bar */}
+              <div className="absolute top-0 left-2 w-[93%] h-1 rounded-t-full bg-gradient-to-r from-[#2c6472] to-[#3b8d99]" />
+
+              {/* Label */}
+              <p className="text-sm font-medium text-gray-600 tracking-wide">{item.label}</p>
+
+              {/* Value */}
+              <h2 className="font-extrabold text-3xl text-[#2c6472] ">
+                {item.value}
+              </h2>
             </div>
           ))}
         </div>
+
 
         <div className="mt-4 flex justify-center">
           <div
@@ -178,14 +189,27 @@ const UserDetails = () => {
           >
             <div>
               <p className="font-medium text-gray-700">{user.email}</p>
-              <h1 className="text-sm text-[#00000069]">{user.role}</h1>
+              <h1 className=" font-semibold text-[#00000069]">
+                {user.first_name} {user.second_name}{" "}
+                <span
+                  className={`font-semibold text-sm ${user.role === "developer"
+                      ? "text-red-500"
+                      : user.role === "seeker"
+                        ? "text-green-500"
+                        : user.role === "admin"
+                          ? "text-blue-500"
+                          : "text-gray-500"
+                    }`}
+                >
+                  ({user.role?.charAt(0).toUpperCase() + user.role?.slice(1) || "Unknown"})
+                </span>
+              </h1>
             </div>
             <div className="flex items-center gap-5">
               <div className="flex items-center space-x-8">
                 <span
-                  className={`px-3 py-1 rounded-full text-white text-sm capitalize ${
-                    user.tier === "free" ? "bg-red-500" : "bg-green-500 w-14 ps-4.5"
-                  }`}
+                  className={`px-3 py-1 rounded-full text-white text-sm capitalize ${user.tier === "free" ? "bg-red-500" : "bg-green-500 w-14 ps-4.5"
+                    }`}
                 >
                   {user.tier}
                 </span>

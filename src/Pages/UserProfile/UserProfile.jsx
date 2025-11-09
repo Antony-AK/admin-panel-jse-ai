@@ -21,6 +21,8 @@ const UserProfile = () => {
   const [editNotifications, setEditNotifications] = useState(false);
   const [editPreferences, setEditPreferences] = useState(false);
   const [editSubscription, setEditSubscription] = useState(false);
+  const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
+
 
 
   const [user, setUser] = useState(null);
@@ -33,16 +35,18 @@ const UserProfile = () => {
     two_factor_enabled: false,
   });
   const [personalInfo, setPersonalInfo] = useState({
-    first_name: '',
-    second_name: '',
-    city: '',
-    state: '',
-    country: '',
-    linkedin_profile: '',
-    portfolio: '',
-    resume: '',
-    blog: ''
+    first_name: "",
+    second_name: "",
+    city: "",
+    state: "",
+    country: "",
+    linkedin_profile: "",
+    website: "",
+    github: "",
+    blog: "",
+    social_media: "",
   });
+
   const [academics, setAcademics] = useState([]);
   const [workExperiences, setWorkExperiences] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -68,18 +72,45 @@ const UserProfile = () => {
   const [topJobsCount, setTopJobsCount] = useState(0);
   const [totalApplications, setTotalApplications] = useState(0);
   const [weeklyApplications, setWeeklyApplications] = useState(0);
+  // 🔹 Subscription details
+  const [subscriptionTier, setSubscriptionTier] = useState("");
+  const [subscriptionPeriod, setSubscriptionPeriod] = useState("");
+  const [subscriptionStart, setSubscriptionStart] = useState("");
+  const [subscriptionEnd, setSubscriptionEnd] = useState("");
+
+  // 🔹 Document format preferences
+  const [cvFormat, setCvFormat] = useState("");
+  const [clFormat, setClFormat] = useState("");
+
+  // 🔹 Job tracking & usage stats
+  const [jobResearchCount, setJobResearchCount] = useState(0);
+  const [applicationCount, setApplicationCount] = useState(0);
+  const [dailyCoverletterLimit, setDailyCoverletterLimit] = useState(0);
+
+  // 🔹 Profile picture
+  const [profilePic, setProfilePic] = useState("");
+
+  // 🔹 Selected job applications
+  const [selectedJobApplications, setSelectedJobApplications] = useState([]);
+  const [selectedJobApplicationsCount, setSelectedJobApplicationsCount] = useState(0);
+
+  // 🔹 Weekly applications count (new numeric field)
+  const [weeklyApplicationsCount, setWeeklyApplicationsCount] = useState(0);
+
 
   // Convert array to comma-separated string for editing
   const [skillsInput, setSkillsInput] = useState(keySkills.join(", "));
 
 
+
   useEffect(() => {
-    const storedUser = sessionStorage.getItem('selectedUser');
+    const storedUser = sessionStorage.getItem("selectedUser");
 
     if (storedUser) {
-
       const parsedUser = JSON.parse(storedUser);
       console.log(parsedUser);
+
+      // 🔹 Basic auth info
       setUser(parsedUser);
       setPhone(parsedUser?.auth_user?.phone || "");
       setEmail(parsedUser?.auth_user?.email || "");
@@ -90,38 +121,36 @@ const UserProfile = () => {
         two_factor_enabled: parsedUser?.auth_user?.two_factor_enabled || false,
       });
 
+      // 🔹 Personal info
       const personal = parsedUser?.seekers?.[0]?.personal_info;
-
       if (personal) {
         const externalLinks = personal.external_links || [];
 
-        const getLink = (type) => externalLinks.find(link => link.type === type)?.url || '';
+        const getLink = (type) =>
+          externalLinks.find((link) => link.type === type)?.url || "";
 
         setPersonalInfo({
-          first_name: personal?.first_name || '',
-          second_name: personal?.second_name || '',
-          city: personal?.city || '',
-          state: personal?.state || '',
-          country: personal?.country || '',
-          linkedin_profile: personal?.linkedin_profile || '',
-          portfolio: getLink('portfolio'),
-          resume: getLink('resume'),
-          blog: getLink('blog'),
+          first_name: personal?.first_name || "",
+          second_name: personal?.second_name || "",
+          city: personal?.city || "",
+          state: personal?.state || "",
+          country: personal?.country || "",
+          linkedin_profile: personal?.linkedin_profile || "",
+          website: getLink("website"),
+          github: getLink("github"),
+          blog: getLink("blog"),
+          social_media: getLink("social media"),
         });
       }
 
-      const education = parsedUser?.seekers?.[0]?.academics || [];
-      setAcademics(education);
-
+      // 🔹 Education, Work, Projects, Languages, Certificates
+      setAcademics(parsedUser?.seekers?.[0]?.academics || []);
       setWorkExperiences(parsedUser?.seekers?.[0]?.work_experiences || []);
-
-      const pastProjects = parsedUser?.seekers?.[0]?.past_projects || [];
-      setProjects(pastProjects);
-
+      setProjects(parsedUser?.seekers?.[0]?.past_projects || []);
       setLanguages(parsedUser?.seekers?.[0]?.languages || []);
-
       setCertificates(parsedUser?.seekers?.[0]?.certificates || []);
 
+      // 🔹 Notifications
       const notificationData = parsedUser?.notifications?.[0];
       if (notificationData) {
         setNotifications({
@@ -132,24 +161,48 @@ const UserProfile = () => {
         });
       }
 
+      // 🔹 Preferences
       const prefData = parsedUser?.preferences?.[0];
       if (prefData) {
         setPreferences({
           cookie_policy: prefData.cookie_policy || false,
-          language: prefData.language || '',
-          timezone: prefData.timezone || '',
+          language: prefData.language || "",
+          timezone: prefData.timezone || "",
         });
       }
 
-      setKeySkills(parsedUser?.seekers?.[0]?.key_skills || []);
-      setPrimaryTitle(parsedUser?.seekers?.[0]?.primary_title || '');
-      setSecondaryTitle(parsedUser?.seekers?.[0]?.secondary_title || '');
-      setTertiaryTitle(parsedUser?.seekers?.[0]?.tertiary_title || '');
-      setProficiencyTest(parsedUser?.seekers?.[0]?.proficiency_test || 0);
-      setProficiencyTest(parsedUser?.seekers?.[0]?.proficiency_test || 0);
-      setTopJobsCount(parsedUser?.seekers?.[0]?.top_jobs_count || 0);
-      setTotalApplications(parsedUser?.seekers?.[0]?.total_applications || 0);
-      setWeeklyApplications(parsedUser?.seekers?.[0]?.weekly_applications || 0);
+      // 🔹 Seeker details
+      const seeker = parsedUser?.seekers?.[0] || {};
+
+      setKeySkills(seeker.key_skills || []);
+      setPrimaryTitle(seeker.primary_title || "");
+      setSecondaryTitle(seeker.secondary_title || "");
+      setTertiaryTitle(seeker.tertiary_title || "");
+      setProficiencyTest(seeker.proficiency_test || 0);
+      setTopJobsCount(seeker.top_jobs_count || 0);
+      setTotalApplications(seeker.total_applications || 0);
+      setWeeklyApplications(seeker.weekly_applications || 0);
+      setWeeklyApplicationsCount(seeker.weekly_applications_count || 0); // 🆕 new field
+
+      // 🔹 Subscription details (optional but useful)
+      setSubscriptionTier(seeker.subscription_tier || "");
+      setSubscriptionPeriod(seeker.subscription_period || "");
+      setSubscriptionStart(seeker.subscription_interval_start || "");
+      setSubscriptionEnd(seeker.subscription_interval_end || "");
+      setCvFormat(seeker.cv_format || "");
+      setClFormat(seeker.cl_format || "");
+      setJobResearchCount(seeker.job_research_count || 0);
+      setApplicationCount(seeker.application_count || 0);
+      setDailyCoverletterLimit(seeker.daily_generatable_coverletter || 0);
+
+      // 🔹 Profile pic
+      setProfilePic(parsedUser?.profile_pic || "");
+
+      // 🔹 Selected job applications (newly added)
+      setSelectedJobApplications(parsedUser?.selected_job_applications || []);
+      setSelectedJobApplicationsCount(
+        parsedUser?.selected_job_applications?.length || 0
+      );
 
 
     } else {
@@ -163,29 +216,52 @@ const UserProfile = () => {
   };
 
   const handleUserInfoUpdate = () => {
+    const selectedRole = user?.auth_user?.role;
+
+    // 🧩 Build fields to patch
     const updatedFields = {
       phone,
       email,
       is_active: userStatus.is_active,
       email_verified: userStatus.email_verified,
-      two_factor_enabled: userStatus.two_factor_enabled
+      two_factor_enabled: userStatus.two_factor_enabled,
+      role: selectedRole,
+      profile_pic: profilePic || "",
     };
 
-    patchUserData("auth_users", updatedFields).then(() => {
-      // manually update user state for instant reflection in UI
-      setUser(prev => ({
-        ...prev,
-        auth_user: {
-          ...prev.auth_user,
-          phone,
-          email,
-          is_active: userStatus.is_active,
-          email_verified: userStatus.email_verified,
-          two_factor_enabled: userStatus.two_factor_enabled
-        }
-      }));
-    });
+    // 🔹 Send patch request to "auth_users" collection
+    patchUserData("auth_users", updatedFields)
+      .then(() => {
+        setUser((prev) => {
+          const updatedUser = {
+            ...prev,
+            auth_user: {
+              ...prev.auth_user,
+              phone,
+              email,
+              is_active: userStatus.is_active,
+              email_verified: userStatus.email_verified,
+              two_factor_enabled: userStatus.two_factor_enabled,
+              role: selectedRole,
+            },
+            profile_pic: profilePic || prev.profile_pic,
+          };
+
+          // ✅ Store updated user in sessionStorage so it persists on refresh
+          sessionStorage.setItem("selectedUser", JSON.stringify(updatedUser));
+
+          return updatedUser;
+        });
+
+        console.log("✅ User info updated successfully & persisted!");
+      })
+      .catch((error) => {
+        console.error("❌ Error updating user info:", error);
+      });
   };
+
+
+
 
 
   const handlePersonalInfoUpdate = () => {
@@ -571,192 +647,318 @@ const UserProfile = () => {
         <div className='w-full flex gap-3'>
 
           {/* User Info */}
-          <div className="relative w-1/2 flex flex-col items-center gap-5 border border-[#0000001F] rounded-xl px-8 py-5 bg-white">
+          <div className="relative w-1/2 flex flex-col items-center gap-5 border border-[#0000001F] rounded-xl px-8 py-5 bg-white shadow-sm transition-all duration-300 hover:shadow-md">
 
+            {/* Edit / Save Button */}
             <div
               onClick={() => {
-                if (editUserInfo) {
-                  handleUserInfoUpdate();  // ✅ updates everything now
-                }
-                setEditUserInfo(prev => !prev);
+                if (editUserInfo) handleUserInfoUpdate();
+                setEditUserInfo((prev) => !prev);
               }}
-
-              className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
+              className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer transition-all"
             >
-              <img src={editUserInfo ? tick : edit} className='w-3' alt="" />
+              <img src={editUserInfo ? tick : edit} className="w-3" alt="Edit" />
             </div>
 
-            <h2 className="text-xl font-semibold">
-              User Info
-            </h2>
-            <div className="flex flex-col items-center gap-2 text-center">
-              <img src={avatar} className='rounded-full w-24 h-24 border-4 border-gray-100 shadow' alt="Profile" />
-              {editUserInfo ? (
-                <input
-                  type="text"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="border-b outline-none text-center w-72 text-gray-700"
-                />)
-                : (<p className="font-semibold text-lg">
-                  {user?.auth_user?.email || "No Email"}
-                </p>
+            <h2 className="text-xl font-semibold">User Info</h2>
 
-                )}
-
-              {editUserInfo ? (
-                <input
-                  type="text"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="border-b outline-none text-center text-gray-700"
+            <div className="flex flex-col items-center gap-3 text-center">
+              {/* Profile Picture */}
+              <div className="relative">
+                <img
+                  src={profilePic || avatar}
+                  className="rounded-full w-24 h-24 border-4 border-gray-100 shadow object-cover"
+                  alt="Profile"
                 />
+                {editUserInfo && (
+                  <label className="absolute bottom-0 right-0 bg-[#2c6472] text-white rounded-full p-1 cursor-pointer hover:bg-[#22535e] transition-all">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const imageUrl = URL.createObjectURL(file);
+                          setProfilePic(imageUrl);
+                        }
+                      }}
+                    />
+                    <span className="text-xs">✎</span>
+                  </label>
+                )}
+              </div>
+
+              {/* 🧩 Modern Role Dropdown */}
+              {editUserInfo ? (
+                <div className="relative my-5 w-48">
+                  <button
+                    onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
+                    className={`w-full flex items-center justify-between px-5 py-2 rounded-full border-2 font-semibold transition-all duration-300 shadow-sm hover:shadow-md ${user?.auth_user?.role === "seeker"
+                        ? "bg-[#2c6472]/10 text-[#2c6472] border-[#2c6472]"
+                        : user?.auth_user?.role === "developer"
+                          ? "bg-red-100 text-red-700 border-red-300"
+                          : user?.auth_user?.role === "admin"
+                            ? "bg-blue-100 text-blue-700 border-blue-300"
+                            : "bg-gray-100 text-gray-600 border-gray-300"
+                      }`}
+                  >
+                    <span className="capitalize">{user?.auth_user?.role || "Select Role"}</span>
+                    <svg
+                      className={`w-4 h-4 ml-2 transition-transform duration-200 ${roleDropdownOpen ? "rotate-180" : "rotate-0"
+                        }`}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {roleDropdownOpen && (
+                    <div className="absolute mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-10">
+                      {[
+                        { value: "seeker", label: " Seeker", color: "text-[#2c6472]" },
+                        { value: "developer", label: " Developer", color: "text-red-600" },
+                        { value: "admin", label: " Admin", color: "text-blue-600" },
+                      ].map((role) => (
+                        <div
+                          key={role.value}
+                          onClick={() => {
+                            const updated = { ...user };
+                            updated.auth_user.role = role.value;
+                            setUser(updated);
+                            setRoleDropdownOpen(false);
+                          }}
+                          className={`px-5 py-2 cursor-pointer text-sm font-medium hover:bg-gray-100 transition-all ${role.color} ${user?.auth_user?.role === role.value ? "bg-gray-50" : ""
+                            }`}
+                        >
+                          {role.label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ) : (
-                <p className="text-gray-500">
-                  {phone?.trim() || "No phone number"}
-                </p>
+                <span
+                  className={`px-5 py-1 my-5 font-medium border rounded-full ${user?.auth_user?.role === "seeker"
+                      ? "bg-[#2c6472]/10 text-[#2c6472] border-[#2c6472]"
+                      : user?.auth_user?.role === "developer"
+                        ? "bg-red-100 text-red-700 border-red-300"
+                        : user?.auth_user?.role === "admin"
+                          ? "bg-blue-100 text-blue-700 border-blue-300"
+                          : "bg-gray-100 text-gray-600 border-gray-300"
+                    }`}
+                >
+                  {user?.auth_user?.role
+                    ? user.auth_user.role.charAt(0).toUpperCase() + user.auth_user.role.slice(1)
+                    : "Unknown"}
+                </span>
               )}
 
-              <span className="px-5 py-1 bg-[#2c6472]/10 text-[#2c6472] font-medium border border-[#2c6472] rounded-full">
-                {user?.auth_user?.role || "Unknown"}
-              </span>
 
-              <div className="w-full flex gap-3 justify-center text-center mt-4">
+
+              {/* Status Badges */}
+              <div className="w-full flex flex-wrap gap-3 justify-center text-center mt-4">
+                {/* Active / Inactive */}
                 <span
-                  onClick={() => editUserInfo && toggleStatus('is_active')}
-                  className={`cursor-pointer w-[160px] px-5 py-1 text-[15px] rounded-full 
-                  ${userStatus.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                  onClick={() => editUserInfo && toggleStatus("is_active")}
+                  className={`cursor-pointer w-[160px] px-5 py-1 text-[15px] rounded-full transition-all duration-200
+        ${userStatus.is_active
+                      ? "bg-green-100 text-green-700 border border-green-300"
+                      : "bg-red-100 text-red-700 border border-red-300"
+                    }`}
+                >
                   {userStatus.is_active ? "Active" : "Inactive"}
                 </span>
 
+                {/* Email Verified */}
                 <span
-                  onClick={() => editUserInfo && toggleStatus('email_verified')}
-                  className={`cursor-pointer w-[160px] px-5 py-1 text-[15px] rounded-full 
-                  ${userStatus.email_verified ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                  onClick={() => editUserInfo && toggleStatus("email_verified")}
+                  className={`cursor-pointer w-[160px] px-5 py-1 text-[15px] rounded-full transition-all duration-200
+        ${userStatus.email_verified
+                      ? "bg-green-100 text-green-700 border border-green-300"
+                      : "bg-red-100 text-red-700 border border-red-300"
+                    }`}
+                >
                   {userStatus.email_verified ? "Email Verified" : "Not Verified"}
                 </span>
 
+                {/* 2FA */}
                 <span
-                  onClick={() => editUserInfo && toggleStatus('two_factor_enabled')}
-                  className={`cursor-pointer w-[160px] px-5 py-1 text-[15px] rounded-full 
-                  ${userStatus.two_factor_enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                  onClick={() => editUserInfo && toggleStatus("two_factor_enabled")}
+                  className={`cursor-pointer w-[160px] px-5 py-1 text-[15px] rounded-full transition-all duration-200
+        ${userStatus.two_factor_enabled
+                      ? "bg-green-100 text-green-700 border border-green-300"
+                      : "bg-gray-100 text-gray-600 border border-gray-300"
+                    }`}
+                >
                   {userStatus.two_factor_enabled ? "2FA Enabled" : "2FA Disabled"}
                 </span>
               </div>
-
             </div>
           </div>
+
+
 
           {/* Personal Info */}
           <div className="relative w-1/2 flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-5 bg-white">
 
+            {/* Edit / Save Button */}
             <div
               onClick={() => {
                 if (editPersonalInfo) {
                   handlePersonalInfoUpdate();
                 }
-                setEditPersonalInfo(prev => !prev);
-              }} className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
+                setEditPersonalInfo((prev) => !prev);
+              }}
+              className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer transition-all"
             >
-              <img src={editPersonalInfo ? tick : edit} className='w-3' alt="Edit" />
+              <img src={editPersonalInfo ? tick : edit} className="w-3" alt="Edit" />
             </div>
 
             <h2 className="text-lg font-semibold mb-4">Personal Info</h2>
+
             <div className="grid grid-cols-[1fr_3fr] gap-y-2">
+              {/* First Name */}
               <p className="font-medium">First Name:</p>
               {editPersonalInfo ? (
                 <input
                   className="border-b border-gray-300 px-3 outline-none"
                   value={personalInfo.first_name}
-                  onChange={(e) => setPersonalInfo({ ...personalInfo, first_name: e.target.value })}
+                  onChange={(e) =>
+                    setPersonalInfo({ ...personalInfo, first_name: e.target.value })
+                  }
                 />
               ) : (
                 <p>{personalInfo.first_name || "N/A"}</p>
               )}
 
+              {/* Last Name */}
               <p className="font-medium">Last Name:</p>
               {editPersonalInfo ? (
                 <input
                   className="border-b border-gray-300 px-3 outline-none"
                   value={personalInfo.second_name}
-                  onChange={(e) => setPersonalInfo({ ...personalInfo, second_name: e.target.value })}
+                  onChange={(e) =>
+                    setPersonalInfo({ ...personalInfo, second_name: e.target.value })
+                  }
                 />
               ) : (
                 <p>{personalInfo.second_name || "N/A"}</p>
               )}
 
+              {/* City */}
               <p className="font-medium">City:</p>
               {editPersonalInfo ? (
                 <input
                   className="border-b border-gray-300 px-3 outline-none"
                   value={personalInfo.city}
-                  onChange={(e) => setPersonalInfo({ ...personalInfo, city: e.target.value })}
+                  onChange={(e) =>
+                    setPersonalInfo({ ...personalInfo, city: e.target.value })
+                  }
                 />
               ) : (
                 <p>{personalInfo.city || "N/A"}</p>
               )}
 
+              {/* State */}
               <p className="font-medium">State:</p>
               {editPersonalInfo ? (
                 <input
                   className="border-b border-gray-300 px-3 outline-none"
                   value={personalInfo.state}
-                  onChange={(e) => setPersonalInfo({ ...personalInfo, state: e.target.value })}
+                  onChange={(e) =>
+                    setPersonalInfo({ ...personalInfo, state: e.target.value })
+                  }
                 />
               ) : (
                 <p>{personalInfo.state || "N/A"}</p>
               )}
 
+              {/* Country */}
               <p className="font-medium">Country:</p>
               {editPersonalInfo ? (
                 <input
                   className="border-b border-gray-300 px-3 outline-none"
                   value={personalInfo.country}
-                  onChange={(e) => setPersonalInfo({ ...personalInfo, country: e.target.value })}
+                  onChange={(e) =>
+                    setPersonalInfo({ ...personalInfo, country: e.target.value })
+                  }
                 />
               ) : (
                 <p>{personalInfo.country || "N/A"}</p>
               )}
 
-              <p className="font-medium">Portfolio:</p>
+              {/* Website */}
+              <p className="font-medium">Website:</p>
               {editPersonalInfo ? (
                 <input
                   className="border-b border-gray-300 px-3 outline-none"
-                  value={personalInfo.portfolio}
-                  onChange={(e) => setPersonalInfo({ ...personalInfo, portfolio: e.target.value })}
+                  value={personalInfo.website}
+                  onChange={(e) =>
+                    setPersonalInfo({ ...personalInfo, website: e.target.value })
+                  }
                 />
               ) : (
-                <p>{personalInfo.portfolio || "N/A"}</p>
+                <p>{personalInfo.website || "N/A"}</p>
               )}
 
-              <p className="font-medium">Resume:</p>
+              {/* GitHub */}
+              <p className="font-medium">GitHub:</p>
               {editPersonalInfo ? (
                 <input
                   className="border-b border-gray-300 px-3 outline-none"
-                  value={personalInfo.resume}
-                  onChange={(e) => setPersonalInfo({ ...personalInfo, resume: e.target.value })}
+                  value={personalInfo.github}
+                  onChange={(e) =>
+                    setPersonalInfo({ ...personalInfo, github: e.target.value })
+                  }
                 />
               ) : (
-                <p>{personalInfo.resume || "N/A"}</p>
+                <p>{personalInfo.github || "N/A"}</p>
               )}
 
+              {/* Blog */}
               <p className="font-medium">Blog:</p>
               {editPersonalInfo ? (
                 <input
                   className="border-b border-gray-300 px-3 outline-none"
                   value={personalInfo.blog}
-                  onChange={(e) => setPersonalInfo({ ...personalInfo, blog: e.target.value })}
+                  onChange={(e) =>
+                    setPersonalInfo({ ...personalInfo, blog: e.target.value })
+                  }
                 />
               ) : (
                 <p>{personalInfo.blog || "N/A"}</p>
               )}
 
+              {/* Social Media */}
+              <p className="font-medium">Social Media:</p>
+              {editPersonalInfo ? (
+                <input
+                  className="border-b border-gray-300 px-3 outline-none"
+                  value={personalInfo.social_media}
+                  onChange={(e) =>
+                    setPersonalInfo({ ...personalInfo, social_media: e.target.value })
+                  }
+                />
+              ) : (
+                <p>{personalInfo.social_media || "N/A"}</p>
+              )}
+
+              {/* LinkedIn */}
               <p className="font-medium">LinkedIn:</p>
               {editPersonalInfo ? (
                 <input
                   className="border-b border-gray-300 px-3 outline-none"
                   value={personalInfo.linkedin_profile}
-                  onChange={(e) => setPersonalInfo({ ...personalInfo, linkedin_profile: e.target.value })}
+                  onChange={(e) =>
+                    setPersonalInfo({
+                      ...personalInfo,
+                      linkedin_profile: e.target.value,
+                    })
+                  }
                 />
               ) : (
                 <p>{personalInfo.linkedin_profile || "N/A"}</p>
@@ -1278,24 +1480,25 @@ const UserProfile = () => {
         <div className='w-full flex gap-3'>
 
           {/* Subscription & CV */}
-          <div className="relative w-1/2 flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
+          {/* Subscription & CV */}
+          <div className="relative w-1/2 flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-4 bg-white">
+            {/* Edit / Save button */}
             <div
               onClick={() => {
-                if (editSubscription) {
-                  handleSubscriptionUpdate(); // Save data when toggling off
-                }
-                setEditSubscription(prev => !prev); // Toggle edit mode
+                if (editSubscription) handleSubscriptionUpdate(); // save when turning off edit
+                setEditSubscription((prev) => !prev);
               }}
-              className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer"
+              className="absolute top-2 right-4 flex items-center rounded-full hover:bg-[#2c6472]/10 p-3 aspect-square cursor-pointer transition-all"
             >
-              <img src={editSubscription ? tick : edit} className='w-3' alt="" />
+              <img src={editSubscription ? tick : edit} className="w-3" alt="Edit" />
             </div>
 
             <h2 className="text-lg font-semibold mb-4">Subscription & CV</h2>
 
             {user?.seekers?.[0] ? (
               editSubscription ? (
-                <div className='flex flex-col justify-between gap-4'>
+                <div className="flex flex-col gap-4">
+                  {/* CL Format */}
                   <div className="flex items-center gap-5">
                     <label className="w-1/2 font-medium mb-1">CL Format</label>
                     <input
@@ -1307,10 +1510,10 @@ const UserProfile = () => {
                         updated.seekers[0].cl_format = e.target.value;
                         setUser(updated);
                       }}
-                      placeholder="CL Format"
                     />
                   </div>
 
+                  {/* CV Format */}
                   <div className="flex items-center gap-5">
                     <label className="w-1/2 font-medium mb-1">CV Format</label>
                     <input
@@ -1322,10 +1525,10 @@ const UserProfile = () => {
                         updated.seekers[0].cv_format = e.target.value;
                         setUser(updated);
                       }}
-                      placeholder="CV Format"
                     />
                   </div>
 
+                  {/* Subscription Tier */}
                   <div className="flex items-center gap-5">
                     <label className="w-1/2 font-medium mb-1">Subscription Tier</label>
                     <input
@@ -1337,10 +1540,10 @@ const UserProfile = () => {
                         updated.seekers[0].subscription_tier = e.target.value;
                         setUser(updated);
                       }}
-                      placeholder="Subscription Tier"
                     />
                   </div>
 
+                  {/* Subscription Period */}
                   <div className="flex items-center gap-5">
                     <label className="w-1/2 font-medium mb-1">Subscription Period</label>
                     <input
@@ -1352,12 +1555,12 @@ const UserProfile = () => {
                         updated.seekers[0].subscription_period = e.target.value;
                         setUser(updated);
                       }}
-                      placeholder="Subscription Period"
                     />
                   </div>
 
-                  <div className="flex justify-start items-center gap-5">
-                    <label className="font-medium mb-1">Subscription Start Date</label>
+                  {/* Subscription Dates */}
+                  <div className="flex items-center gap-5">
+                    <label className="font-medium mb-1">Subscription Start</label>
                     <input
                       type="date"
                       className="w-fit mb-1 border-b border-gray-300 px-3 outline-none"
@@ -1370,8 +1573,8 @@ const UserProfile = () => {
                     />
                   </div>
 
-                  <div className="flex items-center gap-7">
-                    <label className="font-medium mb-1">Subscription End Date</label>
+                  <div className="flex items-center gap-5">
+                    <label className="font-medium mb-1">Subscription End</label>
                     <input
                       type="date"
                       className="w-fit mb-1 border-b border-gray-300 px-3 outline-none"
@@ -1383,31 +1586,83 @@ const UserProfile = () => {
                       }}
                     />
                   </div>
+
+                  {/* Daily Coverletter Limit */}
+                  <div className="flex items-center gap-5">
+                    <label className="w-1/2 font-medium mb-1">Daily Coverletter Limit</label>
+                    <input
+                      type="number"
+                      className="w-full mb-1 border-b border-gray-300 px-3 outline-none"
+                      value={user.seekers[0].daily_generatable_coverletter || 0}
+                      onChange={(e) => {
+                        const updated = { ...user };
+                        updated.seekers[0].daily_generatable_coverletter = e.target.value;
+                        setUser(updated);
+                      }}
+                    />
+                  </div>
+
+                  {/* Job Research Count */}
+                  <div className="flex items-center gap-5">
+                    <label className="w-1/2 font-medium mb-1">Job Research Count</label>
+                    <input
+                      type="number"
+                      className="w-full mb-1 border-b border-gray-300 px-3 outline-none"
+                      value={user.seekers[0].job_research_count || 0}
+                      onChange={(e) => {
+                        const updated = { ...user };
+                        updated.seekers[0].job_research_count = e.target.value;
+                        setUser(updated);
+                      }}
+                    />
+                  </div>
+
+                  {/* Application Count */}
+                  <div className="flex items-center gap-5">
+                    <label className="w-1/2 font-medium mb-1">Application Count</label>
+                    <input
+                      type="number"
+                      className="w-full mb-1 border-b border-gray-300 px-3 outline-none"
+                      value={user.seekers[0].application_count || 0}
+                      onChange={(e) => {
+                        const updated = { ...user };
+                        updated.seekers[0].application_count = e.target.value;
+                        setUser(updated);
+                      }}
+                    />
+                  </div>
                 </div>
               ) : (
                 <>
                   <p className="font-medium">CL Format: {user.seekers[0].cl_format || "N/A"}</p>
                   <p className="font-medium">CV Format: {user.seekers[0].cv_format || "N/A"}</p>
                   <p className="font-medium">Subscription Tier: {user.seekers[0].subscription_tier || "N/A"}</p>
-                  <p className="font-medium">Period: {user.seekers[0].subscription_period || "N/A"}</p>
+                  <p className="font-medium">Subscription Period: {user.seekers[0].subscription_period || "N/A"}</p>
+
                   <p className="font-medium">
                     Subscription Start:{" "}
                     {user.seekers[0].subscription_interval_start
                       ? new Date(user.seekers[0].subscription_interval_start).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
                       : "N/A"}
                   </p>
+
                   <p className="font-medium">
                     Subscription End:{" "}
                     {user.seekers[0].subscription_interval_end
                       ? new Date(user.seekers[0].subscription_interval_end).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
                       : "N/A"}
                   </p>
+
+                  <p className="font-medium">Daily Coverletter Limit: {user.seekers[0].daily_generatable_coverletter ?? "N/A"}</p>
+                  <p className="font-medium">Job Research Count: {user.seekers[0].job_research_count ?? "N/A"}</p>
+                  <p className="font-medium">Application Count: {user.seekers[0].application_count ?? "N/A"}</p>
                 </>
               )
             ) : (
               <p className="text-gray-500">No subscription data available</p>
             )}
           </div>
+
 
           {/* Key Skills */}
           <div className="relative w-1/2 flex flex-col justify-between border border-[#0000001F] rounded-xl px-8 py-3 bg-white">
@@ -1459,7 +1714,9 @@ const UserProfile = () => {
                     className="border-b border-gray-300 px-3 w-1/2"
                   />
                 ) : (
-                  <span className="w-1/2">{user?.seekers?.[0]?.primary_title || "N/A"}</span>
+                  <span className="w-1/2">
+                    {user?.seekers?.[0]?.primary_title || "N/A"}
+                  </span>
                 )}
               </div>
 
@@ -1474,7 +1731,9 @@ const UserProfile = () => {
                     className="border-b border-gray-300 px-3 w-1/2"
                   />
                 ) : (
-                  <span className="w-1/2">{user?.seekers?.[0]?.secondary_title || "N/A"}</span>
+                  <span className="w-1/2">
+                    {user?.seekers?.[0]?.secondary_title || "N/A"}
+                  </span>
                 )}
               </div>
 
@@ -1489,7 +1748,9 @@ const UserProfile = () => {
                     className="border-b border-gray-300 px-3 w-1/2"
                   />
                 ) : (
-                  <span className="w-1/2">{user?.seekers?.[0]?.tertiary_title || "N/A"}</span>
+                  <span className="w-1/2">
+                    {user?.seekers?.[0]?.tertiary_title || "N/A"}
+                  </span>
                 )}
               </div>
 
@@ -1508,7 +1769,6 @@ const UserProfile = () => {
                     {proficiencyTest === "" ? "N/A" : proficiencyTest}
                   </span>
                 )}
-
               </div>
 
               {/* Top Jobs Count */}
@@ -1561,7 +1821,59 @@ const UserProfile = () => {
                   </span>
                 )}
               </div>
+
+              {/* 🆕 Weekly Applications Count */}
+              <div className="flex items-center justify-between">
+                <label className="font-medium w-1/2">Weekly Applications Count:</label>
+                {editKeySkills ? (
+                  <input
+                    type="number"
+                    value={weeklyApplicationsCount}
+                    onChange={(e) => setWeeklyApplicationsCount(e.target.value)}
+                    className="border-b border-gray-300 px-3 w-1/2"
+                  />
+                ) : (
+                  <span className="w-1/2">
+                    {weeklyApplicationsCount === "" ? "N/A" : weeklyApplicationsCount}
+                  </span>
+                )}
+              </div>
+
+              {/* 🆕 Application Count */}
+              <div className="flex items-center justify-between">
+                <label className="font-medium w-1/2">Application Count:</label>
+                {editKeySkills ? (
+                  <input
+                    type="number"
+                    value={applicationCount}
+                    onChange={(e) => setApplicationCount(e.target.value)}
+                    className="border-b border-gray-300 px-3 w-1/2"
+                  />
+                ) : (
+                  <span className="w-1/2">
+                    {applicationCount === "" ? "N/A" : applicationCount}
+                  </span>
+                )}
+              </div>
+
+              {/* 🆕 Job Research Count */}
+              <div className="flex items-center justify-between">
+                <label className="font-medium w-1/2">Job Research Count:</label>
+                {editKeySkills ? (
+                  <input
+                    type="number"
+                    value={jobResearchCount}
+                    onChange={(e) => setJobResearchCount(e.target.value)}
+                    className="border-b border-gray-300 px-3 w-1/2"
+                  />
+                ) : (
+                  <span className="w-1/2">
+                    {jobResearchCount === "" ? "N/A" : jobResearchCount}
+                  </span>
+                )}
+              </div>
             </div>
+
           </div>
 
         </div>
