@@ -211,6 +211,11 @@ const UserProfile = () => {
 
   }, [navigate])
 
+  useEffect(() => {
+  window.scrollTo(0, 0);
+}, []);
+
+
   const toggleStatus = (key) => {
     setUserStatus(prev => ({ ...prev, [key]: !prev[key] }));
   };
@@ -688,10 +693,37 @@ const UserProfile = () => {
                   </label>
                 )}
               </div>
+              <div>
+                <span className="font-medium">Phone:</span>
+                {editUserInfo ? (
+                  <input
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="border border-gray-300 rounded-md p-2 mt-1 ms-2"
+                  />
+                ) : (
+                  <span className="text-gray-600">{phone}</span>
+                )}
+              </div>
+
+              <div>
+                <span className="font-medium">Email:</span>
+                {editUserInfo ? (
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="border border-gray-300 rounded-md p-2 mt-1 ms-2"
+                  />
+                ) : (
+                  <span className="text-gray-600">{email}</span>
+                )}
+              </div>
 
               {/* 🧩 Modern Role Dropdown */}
               {editUserInfo ? (
-                <div className="relative my-5 w-48">
+                <div className="relative my-2 w-48">
                   <button
                     onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
                     className={`w-full flex items-center justify-between px-5 py-2 rounded-full border-2 font-semibold transition-all duration-300 shadow-sm hover:shadow-md ${user?.auth_user?.role === "seeker"
@@ -742,7 +774,7 @@ const UserProfile = () => {
                 </div>
               ) : (
                 <span
-                  className={`px-5 py-1 my-5 font-medium border rounded-full ${user?.auth_user?.role === "seeker"
+                  className={`px-5 py-1 my-2 font-medium border rounded-full ${user?.auth_user?.role === "seeker"
                       ? "bg-[#2c6472]/10 text-[#2c6472] border-[#2c6472]"
                       : user?.auth_user?.role === "developer"
                         ? "bg-red-100 text-red-700 border-red-300"
@@ -760,7 +792,7 @@ const UserProfile = () => {
 
 
               {/* Status Badges */}
-              <div className="w-full flex flex-wrap gap-3 justify-center text-center mt-4">
+              <div className="w-full flex flex-wrap gap-3 justify-center text-center mt-2">
                 {/* Active / Inactive */}
                 <span
                   onClick={() => editUserInfo && toggleStatus("is_active")}
