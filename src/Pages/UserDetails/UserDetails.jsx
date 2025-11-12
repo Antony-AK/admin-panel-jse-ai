@@ -7,6 +7,8 @@ import avatar from "../../assets/avatar.png";
 import edit from "../../assets/edit.png";
 import drop_down from "../../assets/drop-arrow.png";
 import { ADMIN_URL } from "../../utils/api";
+import TopJobTitlesCard from "../../Components/AnalyticsCards/TopJobTitlesCard";
+import UserProgressCard from "../../Components/AnalyticsCards/UserProgressCard";
 
 const UserDetails = () => {
   const navigate = useNavigate();
@@ -51,35 +53,35 @@ const UserDetails = () => {
 
   // 🧠 Add this function below your fetchUsers():
   const fetchFilteredUsers = async (query) => {
-  try {
-    setIsLoading(true);
-    const token = sessionStorage.getItem("token");
-    const url = `${ADMIN_URL}/edit/user-data${query.startsWith("?") ? query : `?${query}`}`;
+    try {
+      setIsLoading(true);
+      const token = sessionStorage.getItem("token");
+      const url = `${ADMIN_URL}/edit/user-data${query.startsWith("?") ? query : `?${query}`}`;
 
-    const res = await fetch(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
-    });
+      const res = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
 
-    if (!res.ok) {
-      console.error("Response error:", await res.text());
-      toast.error(`Failed to fetch users (${res.status})`);
-      return;
+      if (!res.ok) {
+        console.error("Response error:", await res.text());
+        toast.error(`Failed to fetch users (${res.status})`);
+        return;
+      }
+
+      const data = await res.json();
+      setUsers(data.users || []);
+      setStats(data.meta || {});
+    } catch (err) {
+      console.error("Fetch failed:", err);
+      toast.error("Something went wrong!");
+    } finally {
+      setIsLoading(false);
     }
-
-    const data = await res.json();
-    setUsers(data.users || []);
-    setStats(data.meta || {});
-  } catch (err) {
-    console.error("Fetch failed:", err);
-    toast.error("Something went wrong!");
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
 
   // Initial load
@@ -149,12 +151,12 @@ const UserDetails = () => {
                 main: stats.total,
                 onClick: () => fetchFilteredUsers("?sort_by=is_active&sort_order=desc"),
               },
-               {
-                label: "Subscription",
-                main: stats.subscribed_count,
-                secondary: stats.unsubscribed_count,
-                mainLabel: "Subscribed",
-                secondaryLabel: "Unsubscribed",
+            {
+                label: "Pro vs Free Tier",
+                main: stats.pro_tier_count,
+                secondary: stats.free_tier_count,
+                mainLabel: "Pro",
+                secondaryLabel: "Free",
                 onMainClick: () => fetchFilteredUsers("?sort_by=subscribed&sort_order=desc"),
                 onSecondaryClick: () => fetchFilteredUsers("?sort_by=unsubscribed&sort_order=desc"),
               },
@@ -185,15 +187,6 @@ const UserDetails = () => {
                 onMainClick: () => fetchFilteredUsers("?sort_by=dashboard_complete&sort_order=desc"),
                 onSecondaryClick: () => fetchFilteredUsers("?sort_by=dashboard_incomplete&sort_order=asc"),
               },
-                  {
-                label: "Pro vs Free Tier",
-                main: stats.pro_tier_count,
-                secondary: stats.free_tier_count,
-                mainLabel: "Pro",
-                secondaryLabel: "Free",
-                onMainClick: () => fetchFilteredUsers("?sort_by=subscribed&sort_order=desc"),
-                onSecondaryClick: () => fetchFilteredUsers("?sort_by=unsubscribed&sort_order=desc"),
-              },
               {
                 label: "Job Consumers",
                 main: stats.job_consumer_count,
@@ -219,7 +212,7 @@ const UserDetails = () => {
                 main: stats.total,
                 onClick: () => fetchFilteredUsers("?sort_by=is_active&sort_order=desc"),
               },
-               {
+              {
                 label: "Pro vs Free Tier",
                 main: stats.pro_tier_count,
                 secondary: stats.free_tier_count,
@@ -345,8 +338,22 @@ const UserDetails = () => {
                 </div>
               )}
             </div>
+
           ))}
+          {/* 🧩 Conditionally show analytics cards only when expanded */}
+          {showAll && (
+            <>
+              <div className="col-span-2">
+                <TopJobTitlesCard />
+              </div>
+              <div className="col-span-2">
+                <UserProgressCard />
+              </div>
+            </>
+          )}
         </div>
+
+
 
 
 
