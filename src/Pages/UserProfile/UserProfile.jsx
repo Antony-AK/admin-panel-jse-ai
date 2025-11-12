@@ -29,11 +29,12 @@ const UserProfile = () => {
 
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [userStatus, setUserStatus] = useState({
-    is_active: false,
-    email_verified: false,
-    two_factor_enabled: false,
-  });
+const [userStatus, setUserStatus] = useState({
+  is_active: Boolean(user?.auth_user?.is_active),
+  email_verified: Boolean(user?.auth_user?.email_verified),
+  two_factor_enabled: Boolean(user?.auth_user?.two_factor_enabled),
+});
+
   const [personalInfo, setPersonalInfo] = useState({
     first_name: "",
     second_name: "",
@@ -215,57 +216,57 @@ const UserProfile = () => {
   window.scrollTo(0, 0);
 }, []);
 
+const toggleStatus = (key) => {
+  setUserStatus((prev) => ({
+    ...prev,
+    [key]: !Boolean(prev[key]),
+  }));
+};
 
-  const toggleStatus = (key) => {
-    setUserStatus(prev => ({ ...prev, [key]: !prev[key] }));
-  };
 
   const handleUserInfoUpdate = () => {
-    const selectedRole = user?.auth_user?.role;
+  const selectedRole = user?.auth_user?.role;
 
-    // 🧩 Build fields to patch
-    const updatedFields = {
-      phone,
-      email,
-      is_active: userStatus.is_active,
-      email_verified: userStatus.email_verified,
-      two_factor_enabled: userStatus.two_factor_enabled,
-      role: selectedRole,
-      profile_pic: profilePic || "",
-    };
-
-    // 🔹 Send patch request to "auth_users" collection
-    patchUserData("auth_users", updatedFields)
-      .then(() => {
-        setUser((prev) => {
-          const updatedUser = {
-            ...prev,
-            auth_user: {
-              ...prev.auth_user,
-              phone,
-              email,
-              is_active: userStatus.is_active,
-              email_verified: userStatus.email_verified,
-              two_factor_enabled: userStatus.two_factor_enabled,
-              role: selectedRole,
-            },
-            profile_pic: profilePic || prev.profile_pic,
-          };
-
-          // ✅ Store updated user in sessionStorage so it persists on refresh
-          sessionStorage.setItem("selectedUser", JSON.stringify(updatedUser));
-
-          return updatedUser;
-        });
-
-        console.log("✅ User info updated successfully & persisted!");
-      })
-      .catch((error) => {
-        console.error("❌ Error updating user info:", error);
-      });
+  // 🧩 Ensure all status fields are strictly boolean
+  const updatedFields = {
+    phone,
+    email,
+    is_active: Boolean(userStatus.is_active),
+    email_verified: Boolean(userStatus.email_verified),
+    two_factor_enabled: Boolean(userStatus.two_factor_enabled),
+    role: selectedRole,
+    profile_pic: profilePic || "",
   };
 
+  // 🔹 Send patch request to "auth_users" collection
+  patchUserData("auth_users", updatedFields)
+    .then(() => {
+      setUser((prev) => {
+        const updatedUser = {
+          ...prev,
+          auth_user: {
+            ...prev.auth_user,
+            phone,
+            email,
+            is_active: Boolean(userStatus.is_active),
+            email_verified: Boolean(userStatus.email_verified),
+            two_factor_enabled: Boolean(userStatus.two_factor_enabled),
+            role: selectedRole,
+          },
+          profile_pic: profilePic || prev.profile_pic,
+        };
 
+        // ✅ Persist to sessionStorage
+        sessionStorage.setItem("selectedUser", JSON.stringify(updatedUser));
+        return updatedUser;
+      });
+
+      console.log("✅ User info updated successfully & persisted!");
+    })
+    .catch((error) => {
+      console.error("❌ Error updating user info:", error);
+    });
+};
 
 
 
