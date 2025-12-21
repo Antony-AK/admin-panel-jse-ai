@@ -22,7 +22,7 @@ const App = () => {
     <>
       {showNavbar && <Navbar />}
 
-    <Routes>
+    {/* <Routes>
       <Route path='/' element={<Login />}/>
       <Route path='/dashboard' element={<Dashboard />}/>
       <Route path='/announcements' element={<Announcements />}/>
@@ -30,7 +30,7 @@ const App = () => {
       <Route path='/users' element={<UserDetails />}/>
       <Route path='/users/:id' element={<UserProfile />}/>
       <Route path='/change-password' element={<ChangePassword/>} />
-    </Routes>
+    </Routes> */}
 
     <ToastContainer
       position="top-right"
